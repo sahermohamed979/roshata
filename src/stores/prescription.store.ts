@@ -1,6 +1,12 @@
 import { create } from 'zustand';
-import type { Prescription, PrescriptionMedicineItem, PatientInfo } from '@/types/prescription.types';
+import type {
+  Prescription,
+  PrescriptionMedicineItem,
+  PatientInfo,
+  PrescriptionStatus,
+} from '@/types/prescription.types';
 import type { UnifiedMedicineResult } from '@/features/medicines/repositories/medicine.repository';
+import { PrescriptionRepository } from '@/features/prescriptions/repositories/prescription.repository';
 
 interface PrescriptionState {
   // Prescription Header & Metadata
@@ -11,9 +17,11 @@ interface PrescriptionState {
   diagnosis: string;
   notes: string;
   paperSize: 'A4' | 'A5' | 'CUSTOM';
+  status: PrescriptionStatus;
   items: PrescriptionMedicineItem[];
   isSaving: boolean;
   hasUnsavedChanges: boolean;
+  lastSavedAt: string | null;
 
   // Actions
   setPatientInfo: (patient: Partial<PatientInfo>) => void;
@@ -21,6 +29,7 @@ interface PrescriptionState {
   setNotes: (notes: string) => void;
   setTemplateId: (templateId: string) => void;
   setPaperSize: (paperSize: 'A4' | 'A5' | 'CUSTOM') => void;
+  setStatus: (status: PrescriptionStatus) => void;
 
   // Item Management
   addMedicine: (medicine: UnifiedMedicineResult, defaults?: Partial<PrescriptionMedicineItem>) => void;
@@ -29,7 +38,8 @@ interface PrescriptionState {
   moveItem: (fromIndex: number, toIndex: number) => void;
   duplicateItem: (id: string) => void;
 
-  // Lifecycle
+  // Lifecycle & Persistence
+  autoSaveDraft: () => Promise<void>;
   resetPrescription: () => void;
   loadPrescription: (prescription: Prescription) => void;
   exportToRecord: () => Prescription;
@@ -51,15 +61,18 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
   diagnosis: '',
   notes: '',
   paperSize: 'A5',
+  status: 'draft',
   items: [],
   isSaving: false,
   hasUnsavedChanges: false,
+  lastSavedAt: null,
 
-  setPatientInfo: (updates) =>
+  setPatientInfo: (updates) => {
     set((state) => ({
       patient: { ...state.patient, ...updates },
       hasUnsavedChanges: true,
-    })),
+    }));
+  },
 
   setDiagnosis: (diagnosis) => set({ diagnosis, hasUnsavedChanges: true }),
 
@@ -68,6 +81,8 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
   setTemplateId: (templateId) => set({ templateId, hasUnsavedChanges: true }),
 
   setPaperSize: (paperSize) => set({ paperSize, hasUnsavedChanges: true }),
+
+  setStatus: (status) => set({ status, hasUnsavedChanges: true }),
 
   addMedicine: (med, defaults = {}) => {
     const newItem: PrescriptionMedicineItem = {
@@ -79,10 +94,11 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
       strengthSnapshot: med.strength,
       dosageFormSnapshot: med.dosageForm,
       activeIngredientSnapshot: med.activeIngredient,
-      dosage: defaults.dosage || 'قرص واحد',
-      frequency: defaults.frequency || 'كل 8 ساعات (3 مرات يومياً)',
-      duration: defaults.duration || 'لمدة 5 أيام',
+      dosage: defaults.dosage || med.defaultDosage || 'قرص واحد',
+      frequency: defaults.frequency || med.defaultFrequency || 'كل 8 ساعات (3 مرات يومياً)',
+      duration: defaults.duration || med.defaultDuration || 'لمدة 5 أيام',
       timing: defaults.timing || 'بعد الأكل',
+      route: defaults.route || med.routeOfAdministration || 'فموي',
       instructions: defaults.instructions || '',
       displayOrder: get().items.length + 1,
       ...defaults,
@@ -110,6 +126,9 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
 
   moveItem: (fromIndex, toIndex) =>
     set((state) => {
+      if (fromIndex < 0 || fromIndex >= state.items.length || toIndex < 0 || toIndex >= state.items.length) {
+        return state;
+      }
       const items = [...state.items];
       const [moved] = items.splice(fromIndex, 1);
       items.splice(toIndex, 0, moved);
@@ -133,6 +152,34 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
     }));
   },
 
+  autoSaveDraft: async () => {
+    const s = get();
+    // Only save if there is content
+    if (!s.patient.name.trim() && s.items.length === 0) return;
+
+    set({ isSaving: true });
+    try {
+      const record: Prescription = {
+        id: s.id,
+        doctorId: s.doctorId,
+        templateId: s.templateId,
+        patient: s.patient,
+        diagnosis: s.diagnosis,
+        notes: s.notes,
+        items: s.items,
+        paperSize: s.paperSize,
+        status: s.status,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      await PrescriptionRepository.save(record);
+      set({ hasUnsavedChanges: false, isSaving: false, lastSavedAt: new Date().toLocaleTimeString('ar-EG') });
+    } catch (err) {
+      console.error('Failed to auto-save draft:', err);
+      set({ isSaving: false });
+    }
+  },
+
   resetPrescription: () =>
     set({
       id: `rx_${Date.now()}`,
@@ -140,7 +187,9 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
       diagnosis: '',
       notes: '',
       items: [],
+      status: 'draft',
       hasUnsavedChanges: false,
+      lastSavedAt: null,
     }),
 
   loadPrescription: (rx) =>
@@ -152,8 +201,10 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
       diagnosis: rx.diagnosis || '',
       notes: rx.notes || '',
       paperSize: rx.paperSize,
+      status: rx.status,
       items: rx.items,
       hasUnsavedChanges: false,
+      lastSavedAt: new Date(rx.updatedAt).toLocaleTimeString('ar-EG'),
     }),
 
   exportToRecord: (): Prescription => {
@@ -167,7 +218,7 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
       notes: s.notes,
       items: s.items,
       paperSize: s.paperSize,
-      status: 'completed',
+      status: s.status,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

@@ -121,3 +121,86 @@
    - Added `"test": "node --test tests/*.test.mjs"` script to `package.json`.
    - Executed `pnpm test`: 9 tests passed in 79ms.
    - Executed `npx tsc --noEmit`: 0 errors.
+
+---
+
+## Log Entry 005 — Phase 3: Prescription Editor Complete Implementation & Verification
+**Date:** 2026-11-14  
+**Author:** Lead Software Architect  
+
+### Scope & Delivered Features:
+1. **Prescription Zod Schema Validation:**
+   - Created `src/features/prescriptions/schemas/prescription.schema.ts` defining strict validation schemas for `PatientInfo`, `PrescriptionMedicineItem`, and full `Prescription`.
+2. **Prescription Repository Expansion:**
+   - Updated `src/features/prescriptions/repositories/prescription.repository.ts`:
+     - Added `getLatestDraft(doctorId)` to detect unfinished consultations.
+     - Added `duplicateAsNewDraft(id)` for cloning past prescriptions for recurring patient visits.
+     - Added `listByStatus(status, limit)` for filtering drafts and completed records.
+     - Added multi-field search over patient name, phone, and diagnosis.
+3. **Reactive Store Enhancements (`usePrescriptionStore`):**
+   - Added automatic snapshot capture (`nameSnapshotAr`, `nameSnapshotEn`, `strengthSnapshot`, `dosageFormSnapshot`, `activeIngredientSnapshot`).
+   - Added `autoSaveDraft()` updating Dexie IndexedDB with debounced trigger.
+   - Added `lastSavedAt` tracking for clinical transparency.
+4. **Enhanced Keyboard-Navigable Search Combobox:**
+   - Upgraded `src/features/prescriptions/components/medicine-search-combobox.tsx`:
+     - Up/Down arrow key navigation through matching search results.
+     - Enter key selection for mouse-free rapid prescribing.
+     - Barcode input and scanner support.
+     - Fallback custom medicine creation when 0 results found.
+5. **Prescription Medicine List & Operations:**
+   - Upgraded `src/features/prescriptions/components/prescription-medicine-list.tsx`:
+     - Item reordering (up/down) with sequential order recalculation.
+     - Item duplication for dosage titration or dual regimens.
+     - Clean item deletion.
+     - Pre-populated dosage and frequency preset chips.
+6. **Live Preview Drawer / Sheet (`FR-03`):**
+   - Created `src/features/prescriptions/components/prescription-live-preview-sheet.tsx` allowing the doctor to view the exact printable prescription document rendered live with every keystroke.
+7. **Draft Resumption & Auto-save UI:**
+   - Updated `src/features/prescriptions/components/prescription-editor.tsx` to detect unfinished drafts on startup and display a one-click resumption banner.
+8. **Automated Verification:**
+   - Created `tests/phase3-prescription.test.mjs` covering:
+     - `PRE-001`: Create prescription with patient details.
+     - `PRE-002`: Multi-medicine ordering and reordering.
+     - `PRE-003`: Clinical direction edits.
+     - `PRE-004`: Item removal without affecting other records.
+     - `PRE-005`: Item duplication with fresh unique IDs.
+     - `PRE-006`: Historical snapshot immutability verification.
+   - Executed `pnpm test`: 16 tests passed in 91ms.
+   - Executed `npx tsc --noEmit`: 0 errors.
+
+---
+
+## Log Entry 006 — Phase 4: Printing Engine Complete Implementation & Verification
+**Date:** 2026-11-14  
+**Author:** Lead Software Architect  
+
+### Scope & Delivered Features:
+1. **Dynamic Content Overflow & Pagination Engine:**
+   - Created `src/features/prescriptions/utils/prescription-pagination.ts`:
+     - Implemented `calculateItemWeight` accounting for instruction lengths (>50, >100 characters) and timing notes.
+     - Implemented `paginatePrescriptionItems` dynamically splitting medication items into page chunks based on A5 / A4 physical height budgets.
+     - Protected against splitting medicine rows across page breaks using `break-inside: avoid` (`page-break-inside: avoid`).
+2. **Physical Dimensions & High-Fidelity Rendering (`prescription-document.tsx`):**
+   - Configured exact millimeter dimensions:
+     - A5: 148mm × 210mm portrait (16mm top/bottom padding).
+     - A4: 210mm × 297mm portrait (22mm top/bottom padding).
+   - Designed Page 1 full clinic header + patient bar + Rx watermark.
+   - Designed continuation pages with compact recurring header and page count ("صفحة 2 من 2").
+   - Positioned clinic footer, return policy notice, and doctor's signature on the final medication page.
+3. **Dual-Page (Front & Back) Layout:**
+   - Front page(s): Formatted prescription items with bilingual typography (Arabic directions + English trade names/strengths).
+   - Back page: Comprehensive post-examination guidelines, warning symptoms requiring emergency contact, and follow-up return policies.
+4. **Interactive Print Preview & PDF Export Modal (`prescription-print-modal.tsx`):**
+   - Built interactive print modal displaying page counts and live A4 / A5 toggles.
+   - Built Back-page toggle ("ظهر الروشتة").
+   - Implemented "حفظ كـ PDF" (Export to PDF) dynamically assigning sanitized Arabic file titles (`روشتة_[اسم المريض]_[التاريخ].pdf`).
+5. **Print-Specific CSS:**
+   - Added global `@media print` rules specifying exact page size, zero margins, and removal of background interference.
+6. **Automated Verification:**
+   - Created `tests/phase4-printing.test.mjs` verifying:
+     - `PRT-001`, `PRT-002`: A5 and A4 capacity thresholds.
+     - `PRT-003`: Automatic multi-page distribution when items exceed single-page limits.
+     - `PRT-004`: Weight increases for long instructions.
+     - `PRT-007`: PDF export title sanitation.
+   - Executed `pnpm test`: 21 tests passed across 9 suites in 107ms.
+   - Executed `npx tsc --noEmit`: 0 errors.

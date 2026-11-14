@@ -1,11 +1,21 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Save, Printer, Trash2, CheckCircle2, AlertCircle, FilePlus2 } from 'lucide-react';
+import {
+  Save,
+  Printer,
+  Trash2,
+  CheckCircle2,
+  AlertCircle,
+  FilePlus2,
+  Eye,
+  Clock,
+} from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { usePrescriptionStore } from '@/stores/prescription.store';
 import { PrescriptionRepository } from '../repositories/prescription.repository';
 import { PrescriptionPrintModal } from './prescription-print-modal';
+import { PrescriptionLivePreviewSheet } from './prescription-live-preview-sheet';
 import { toast } from 'sonner';
 
 export function PrescriptionActionBar() {
@@ -19,11 +29,14 @@ export function PrescriptionActionBar() {
     resetPrescription,
     exportToRecord,
     hasUnsavedChanges,
+    lastSavedAt,
+    autoSaveDraft,
+    isSaving,
   } = usePrescriptionStore();
 
   // Local state
   const [printModalOpen, setPrintModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [livePreviewOpen, setLivePreviewOpen] = useState(false);
 
   // Functions
   const handleSaveDraft = async () => {
@@ -32,18 +45,8 @@ export function PrescriptionActionBar() {
       return;
     }
 
-    setIsSaving(true);
-    try {
-      const record = exportToRecord();
-      record.status = 'draft';
-      await PrescriptionRepository.save(record);
-      toast.success('تم حفظ مسودة الروشتة في قاعدة البيانات المحلية (IndexedDB)');
-    } catch (err) {
-      console.error('Failed to save draft:', err);
-      toast.error('تعذر حفظ المسودة محلياً');
-    } finally {
-      setIsSaving(false);
-    }
+    await autoSaveDraft();
+    toast.success('تم حفظ مسودة الروشتة في قاعدة البيانات المحلية (IndexedDB)');
   };
 
   const handlePrintClick = async () => {
@@ -52,12 +55,12 @@ export function PrescriptionActionBar() {
       return;
     }
 
-    // Save as completed prescription when printed
     try {
       const record = exportToRecord();
+      record.status = 'completed';
       await PrescriptionRepository.save(record);
     } catch (err) {
-      console.error('Error auto-saving before print:', err);
+      console.error('Error saving before print:', err);
     }
 
     setPrintModalOpen(true);
@@ -100,16 +103,21 @@ export function PrescriptionActionBar() {
             </button>
           </div>
 
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
+          <div className="hidden md:flex items-center gap-2 text-xs text-slate-500 font-semibold">
             {hasUnsavedChanges ? (
               <span className="text-amber-600 flex items-center gap-1">
                 <AlertCircle className="w-3.5 h-3.5" />
                 تغييرات غير محفوظة
               </span>
+            ) : lastSavedAt ? (
+              <span className="text-[#0B7B5E] flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                تم الحفظ {lastSavedAt}
+              </span>
             ) : (
               <span className="text-[#0B7B5E] flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                الروشتة محفوظة
+                الروشتة محفوظة محلياً
               </span>
             )}
           </div>
@@ -117,6 +125,18 @@ export function PrescriptionActionBar() {
 
         {/* Right Side: Action Buttons */}
         <div className="flex items-center gap-2">
+          {/* Live Preview Button (FR-03 requirement) */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setLivePreviewOpen(true)}
+            className="border-[#D0E5DC] text-[#074C3A] hover:bg-[#E3F5EE] text-xs sm:text-sm font-bold h-10 px-3.5 rounded-xl gap-1.5"
+            title="معاينة حية لشكل الروشتة أثناء الكتابة"
+          >
+            <Eye className="w-4 h-4 text-[#0B7B5E]" />
+            <span className="hidden sm:inline">معاينة حية</span>
+          </Button>
+
           {/* Reset / New */}
           <Button
             type="button"
@@ -152,6 +172,13 @@ export function PrescriptionActionBar() {
           </Button>
         </div>
       </div>
+
+      {/* Live Preview Sheet */}
+      <PrescriptionLivePreviewSheet
+        open={livePreviewOpen}
+        onOpenChange={setLivePreviewOpen}
+        onTriggerPrint={() => setPrintModalOpen(true)}
+      />
 
       {/* Print Modal */}
       <PrescriptionPrintModal

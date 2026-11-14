@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Printer, X, FileText, Layers, Check, Copy } from 'lucide-react';
+import { Printer, X, FileText, Layers, Check, Copy, Download } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,8 +11,10 @@ import {
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { PrescriptionDocument } from './prescription-document';
+import { paginatePrescriptionItems } from '../utils/prescription-pagination';
 import type { Prescription } from '@/types/prescription.types';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface PrescriptionPrintModalProps {
   open: boolean;
@@ -31,9 +33,28 @@ export function PrescriptionPrintModal({
   );
   const [includeBackPage, setIncludeBackPage] = useState(true);
 
+  // Calculate pages for summary
+  const medPages = paginatePrescriptionItems(prescription.items, paperSize);
+  const totalSheets = medPages.length + (includeBackPage ? 1 : 0);
+
   // Functions
   const handlePrint = () => {
+    const originalTitle = document.title;
+    const patientName = prescription.patient.name || 'مريض';
+    const dateStr = new Date(prescription.createdAt).toISOString().split('T')[0];
+    document.title = `روشتة_${patientName}_${dateStr}`;
+
     window.print();
+
+    // Restore title after dialog closes
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1500);
+  };
+
+  const handleExportPdf = () => {
+    toast.info('في نافذة الطباعة، اختر "حفظ بتنسيق PDF" (Save as PDF)');
+    handlePrint();
   };
 
   const previewPrescription: Prescription = {
@@ -54,9 +75,13 @@ export function PrescriptionPrintModal({
               <DialogTitle className="text-base font-black text-white">
                 معاينة وطباعة الروشتة الطبية
               </DialogTitle>
-              <p className="text-xs text-slate-400">
-                المريض: {prescription.patient.name || 'بدون اسم'} · {prescription.items.length} أدوية
-              </p>
+              <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-400">
+                <span>المريض: {prescription.patient.name || 'بدون اسم'}</span>
+                <span>•</span>
+                <span className="text-[#45DBA5] font-bold">
+                  {medPages.length} صفحة علاج {includeBackPage ? '+ ظهر الإرشادات' : ''}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -98,8 +123,20 @@ export function PrescriptionPrintModal({
               )}
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>طباعة الظهر (الإرشادات)</span>
+              <span>ظهر الروشتة (الإرشادات)</span>
             </button>
+
+            {/* PDF Export Button (FR-06 requirement) */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleExportPdf}
+              className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white text-xs font-bold px-3 h-9 rounded-xl gap-1.5"
+              title="تصدير وحفظ الروشتة كملف PDF"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">حفظ كـ PDF</span>
+            </Button>
 
             {/* Print Trigger Button */}
             <Button
@@ -108,7 +145,7 @@ export function PrescriptionPrintModal({
               className="bg-[#0B7B5E] hover:bg-[#074C3A] text-white font-black text-xs sm:text-sm px-4 h-9 rounded-xl shadow-md gap-2"
             >
               <Printer className="w-4 h-4" />
-              <span>طباعة الآن</span>
+              <span>طباعة الآن ({totalSheets})</span>
             </Button>
           </div>
         </div>
