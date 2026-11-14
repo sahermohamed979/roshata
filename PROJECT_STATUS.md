@@ -1,36 +1,41 @@
 # Roshteh — Project Status & Health Matrix
 
 **Platform:** Roshteh (روشتة) — Professional Offline-First Prescription Management System  
-**Current Phase:** Phase 4: Printing Engine (Completed & Fully Verified)  
+**Current Phase:** Phase 6: Central Backend & Admin Dashboard (Completed & Fully Verified)  
 **Last Updated:** 2026-11-14  
 
 ---
 
 ## 1. Executive Summary
 
-Phase 4 (Printing Engine) and the Complete Legacy Purge have been fully completed and validated:
-- **Clean Codebase & Pure Roshteh Architecture:**
-  - Purged all 14 legacy Express API proxy route handlers under `src/app/api/`.
-  - Purged old NextAuth login routes under `src/app/auth/`.
-  - Purged old multi-role slots and pages under `src/app/dashboard/` (`@admin`, `@doctor`, `@receptionist`).
-  - Purged 14 legacy feature folders (`appointments`, `auth`, `chat`, `clinical-search`, `closing`, `drugs`, `examination`, `expenses`, `home`, `patient`, `payments`, `pricing`, `reports`, `users`).
-  - Purged obsolete desktop/server assets, old anatomy images, and legacy icons.
-  - Active routes verified: `/` (Home), `/prescriptions` (Archive), `/prescriptions/new` (Editor), `/medicines` (Catalog), `/templates` (Branding), `/settings` (Backup & Restore).
-- **Physical Paper Dimensions (`PRT-001`, `PRT-002`):**
-  - High-precision CSS `@page` layout for **A5** (148mm × 210mm) and **A4** (210mm × 297mm).
-  - Clean `@media print` rules removing browser headers/footers, background noise, and margins.
-- **Dynamic Content Overflow & Multi-Page Pagination (`PRT-003`, `PRT-004`):**
-  - Built `prescription-pagination.ts` engine with item physical weights based on instruction length and timing notes.
-  - Accurately splits medication lists into page chunks (`paginatePrescriptionItems`).
-  - Individual drug rows marked with `break-inside: avoid` preventing sliced lines across page breaks.
-- **Front & Back Printing (`PRT-003`):**
-  - Front pages dedicated to prescribed medications, dosage directions, and signature.
-  - Optional Back page (`ظهر الروشتة`) rendering post-consultation medical compliance instructions, emergency warning signs, and follow-up consultation dates.
-- **PDF Export Support (`PRT-007`):**
-  - Dedicated "حفظ كـ PDF" action in `PrescriptionPrintModal` with clean Arabic document titles.
+Phase 6 (Central Backend & Admin Portal) has been engineered, implemented, and fully verified:
+- **Central PostgreSQL Database Schema (`schema.sql`):**
+  - Designed relational tables: `medicines`, `medicine_sources`, `medicine_versions`, `medicine_changes`, `medicine_imports`, `medicine_suggestions`, `audit_logs`.
+  - Comprehensive indexing: Trigram GIN indexes for Arabic and English trade names and active ingredients, B-Tree indexes on barcodes, versions, and active flags.
+- **Central Medicine Engine & Data Access Layer (`central-medicine.service.ts`):**
+  - Dual-mode data access: Connects via `pg.Pool` to PostgreSQL when `DATABASE_URL` is configured, while seamlessly falling back to a persistent memory store for offline/standalone execution.
+  - Medicine CRUD operations with automatic change tracking (`action: 'create' | 'update' | 'deactivate'`).
+  - Version publication pipeline (`publishVersion`) calculating checksums, release notes, and incrementing monotonic version numbers.
+  - Source tracking attributing formulary records to the Egyptian Drug Authority (EDA / MOH) and WHO INN.
+- **Next.js Central API Route Handlers (`/api/v1/`):**
+  - `GET /api/v1/medicines/manifest`: Computes database version, pending changes count, and update availability.
+  - `GET /api/v1/medicines/changes?since=X`: Returns incremental delta changes after a specific version.
+  - `GET /api/v1/medicines/snapshot`: Delivers full database bootstrap snapshot.
+  - `GET / POST /api/v1/medicines/suggestions`: Crowdsourcing endpoint for offline doctors to submit new formulary suggestions.
+  - `GET / POST /api/v1/admin/medicines`: Admin listing, filtering, search, and medicine creation.
+  - `GET / PUT / DELETE /api/v1/admin/medicines/[id]`: Detail view, updates, and deactivation.
+  - `POST /api/v1/admin/versions/publish`: Official release publisher.
+  - `POST /api/v1/admin/suggestions/[id]/review`: Doctor suggestion approval and rejection pipeline.
+- **Comprehensive Admin Dashboard Portal (`/admin`):**
+  - Overview metrics: Total Central Medicines, Active Published Version, Pending Changes, Pending Doctor Suggestions.
+  - 4 Administrative Management Tabs:
+    1. **الدليل الدوائي المركزي (Central Catalog):** Search, filtering, add medicine dialog with Zod validation, edit, and deactivation.
+    2. **إصدارات وتحديثات العيادات (Version Management):** Active version metrics and one-click release publisher dialog with release notes.
+    3. **مراجعة مقترحات الأطباء (Doctor Suggestions Review):** Table of clinic-submitted suggestions with one-click "اعتماد وإضافة للقاعدة" (Approve & Add) or "رفض" (Reject).
+    4. **مصادر البيانات والتسعيرة الجبرية (Data Sources):** Official Egyptian Drug Authority (EDA) regulatory formulary management.
 - **Automated Verification:**
-  - 21 unit and integration tests passing (`pnpm test`).
-  - Next.js production build (`pnpm build`) compiled 100% clean with zero errors across all routes.
+  - 40 unit and integration tests passing (`pnpm test`) across 20 suites.
+  - Next.js production build (`next build`) compiled 100% clean with zero errors across all 16 static and dynamic routes.
   - Strict TypeScript check (`tsc --noEmit`) passes with 0 errors.
 
 ---
@@ -51,7 +56,12 @@ Phase 4 (Printing Engine) and the Complete Legacy Purge have been fully complete
 | **Content Overflow Engine** | Automatic multi-page pagination | 🟢 Completed | Weight-based distribution preventing line splits |
 | **Front and Back Printing** | Dual-page clinical layout | 🟢 Completed | Front page medications + Back page medical guidelines |
 | **PDF Export Engine** | Native browser print to PDF integration | 🟢 Completed | Direct PDF export with automated title formatting |
-| **Template Builder** | Doctor and clinic branding customizer | 🟢 Completed | Configurable clinic header, footer, return policy, and paper size |
+| **Template Builder (Stage A & B)** | Simple settings & advanced visual editor | 🟢 Completed | Multi-template, Base64 assets, reorderable blocks, undo/redo |
+| **Central Database Schema** | PostgreSQL schema with Trigram indexing | 🟢 Completed | `schema.sql`: medicines, sources, versions, changes, suggestions |
+| **Central Medicine Engine** | Versioned CRUD & change tracking | 🟢 Completed | Atomic changes audit, delta calculation, and versioning |
+| **Central Synchronization API** | Route Handlers for manifest, changes & snapshot | 🟢 Completed | `/api/v1/medicines/manifest`, `/changes`, `/snapshot` |
+| **Doctor Suggestions Pipeline** | Offline doctor suggestions & admin review | 🟢 Completed | Review workflow with automatic promotion to central formulary |
+| **Central Admin Dashboard** | Admin portal with metrics and management | 🟢 Completed | Full RTL dashboard at `/admin` for formulary and version publishing |
 | **Backup & Restore** | JSON Export / Import in browser | 🟢 Completed | Full offline backup capability |
 
 ---
@@ -65,5 +75,6 @@ Phase 4 (Printing Engine) and the Complete Legacy Purge have been fully complete
 | **Language** | TypeScript 5 (Strict Mode) | Verified (`tsc --noEmit` = 0 errors) |
 | **Validation** | Zod 4.6.7 | `prescriptionSchema`, `medicineBaseSchema` |
 | **Local Database** | Dexie.js 4.4.7 + dexie-react-hooks | Schema v2 with barcode index |
-| **State Management** | Zustand 5.1.0 | Verified |
-| **Automated Tests** | Node Native Test Runner | 21 tests passed (`pnpm test`) |
+| **Central Backend** | pg 8.23.1 + Central Data Access Layer | PostgreSQL connection pool + resilient fallback |
+| **State Management** | Zustand 5.1.0 | `usePrescriptionStore`, `useMedicineStore`, `useTemplateStore` |
+| **Automated Tests** | Node Native Test Runner | 40 tests passed across 20 suites (`pnpm test`) in 128ms |

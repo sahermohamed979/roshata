@@ -1,7 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Printer, X, FileText, Layers, Check, Copy, Download } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  Printer,
+  X,
+  FileText,
+  Layers,
+  Check,
+  Copy,
+  Download,
+  LayoutTemplate,
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +21,9 @@ import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { PrescriptionDocument } from './prescription-document';
 import { paginatePrescriptionItems } from '../utils/prescription-pagination';
+import { TemplateRepository } from '@/features/templates/repositories/template.repository';
 import type { Prescription } from '@/types/prescription.types';
+import type { PrescriptionTemplate } from '@/types/template.types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -32,6 +43,28 @@ export function PrescriptionPrintModal({
     prescription.paperSize === 'A4' ? 'A4' : 'A5'
   );
   const [includeBackPage, setIncludeBackPage] = useState(true);
+  const [templates, setTemplates] = useState<PrescriptionTemplate[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<PrescriptionTemplate | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      loadTemplates();
+    }
+  }, [open]);
+
+  const loadTemplates = async () => {
+    try {
+      const all = await TemplateRepository.listAll();
+      setTemplates(all);
+      const defaultTpl = all.find((t) => t.isDefault) || all[0] || null;
+      setSelectedTemplate(defaultTpl);
+      if (defaultTpl?.paperSize === 'A4' || defaultTpl?.paperSize === 'A5') {
+        setPaperSize(defaultTpl.paperSize);
+      }
+    } catch (err) {
+      console.error('Failed to load templates for print modal:', err);
+    }
+  };
 
   // Calculate pages for summary
   const medPages = paginatePrescriptionItems(prescription.items, paperSize);
@@ -68,7 +101,7 @@ export function PrescriptionPrintModal({
         {/* Modal Header & Controls */}
         <div className="p-4 sm:p-5 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#0B7B5E] text-white flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[#0B7B5E] text-white flex items-center justify-center shrink-0">
               <Printer className="w-5 h-5" />
             </div>
             <div>
@@ -87,6 +120,32 @@ export function PrescriptionPrintModal({
 
           {/* Print Options & Actions */}
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            {/* Template Selector (if multiple exist) */}
+            {templates.length > 1 && (
+              <div className="flex items-center gap-1.5 bg-slate-800 px-2 py-1 rounded-xl border border-slate-700">
+                <LayoutTemplate className="w-3.5 h-3.5 text-[#45DBA5]" />
+                <select
+                  value={selectedTemplate?.id || ''}
+                  onChange={(e) => {
+                    const found = templates.find((t) => t.id === e.target.value);
+                    if (found) {
+                      setSelectedTemplate(found);
+                      if (found.paperSize === 'A4' || found.paperSize === 'A5') {
+                        setPaperSize(found.paperSize);
+                      }
+                    }
+                  }}
+                  className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer"
+                >
+                  {templates.map((t) => (
+                    <option key={t.id} value={t.id} className="bg-slate-900 text-white">
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             {/* Paper Size Toggle */}
             <div className="flex items-center bg-slate-800 p-1 rounded-xl border border-slate-700">
               <button
@@ -123,7 +182,7 @@ export function PrescriptionPrintModal({
               )}
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>ظهر الروشتة (الإرشادات)</span>
+              <span>ظهر الروشتة</span>
             </button>
 
             {/* PDF Export Button (FR-06 requirement) */}
@@ -155,6 +214,7 @@ export function PrescriptionPrintModal({
           <div className="shadow-2xl rounded-sm overflow-hidden bg-white max-w-full">
             <PrescriptionDocument
               prescription={previewPrescription}
+              template={selectedTemplate}
               includeBackPage={includeBackPage}
             />
           </div>

@@ -236,3 +236,83 @@
      - `/prescriptions/new` (Prescription Editor)
      - `/settings` (Database Backup & Restore)
      - `/templates` (Clinic Branding Customizer)
+
+
+---
+
+## Log Entry 008 — Phase 5: Template Builder (Stage A & Stage B) Complete Implementation & Verification
+**Date:** 2026-11-14  
+**Author:** Lead Software Architect  
+
+### Scope & Delivered Features:
+1. **Enhanced Template Model & Schema (`src/types/template.types.ts`):**
+   - Added doctor clinical qualifications (`qualificationsAr`, `qualificationsEn`) and syndicate licensing number (`syndicateNumber`).
+   - Added clinic metadata: email, emergency hotline phone, return consultation policy.
+   - Added visual layout configurations: `headerLayout` (split, centered, modern, minimalist), `footerLayout`, `showLogo`, `showSignature`, `showStamp`, `showWatermark`, `watermarkOpacity`, `showReturnPolicy`, `showPatientBox`, `showDiagnosis`.
+   - Added Stage B `TemplateBlockElement[]` (`header`, `patient_box`, `rx_watermark`, `medications`, `instructions`, `doctor_signature`, `clinic_stamp`, `footer`, `custom_text`, `divider`) with `createDefaultTemplateElements()`.
+2. **Template Repository (`src/features/templates/repositories/template.repository.ts`):**
+   - Implemented `listAll()`, `getById()`, `getDefault()`, `save()`, `create()`.
+   - Implemented `duplicate(id, newName)` for cloning templates with independent IDs.
+   - Implemented `setDefault(id)` ensuring atomic single default enforcement.
+   - Implemented `delete(id)` with automatic default successor promotion.
+3. **Template Zustand Store with Undo/Redo (`src/stores/template.store.ts`):**
+   - Built reactive `useTemplateStore` with multi-template lifecycle.
+   - Implemented in-memory history stack with `undo()` (`Ctrl+Z`) and `redo()` (`Ctrl+Y` / `Ctrl+Shift+Z`).
+   - Implemented element reordering, visibility toggles, and custom block creation.
+4. **UI Components (`src/features/templates/components/`):**
+   - `template-management-bar.tsx`: Active template switcher, "قالب جديد" dialog, "نسخ" button, "تعيين كافتراضي", delete confirmation, undo/redo buttons, and mode toggle.
+   - `template-simple-form.tsx` (Stage A): Doctor/clinic profiles, Base64 image upload for logo/signature/stamp, medical color palettes with custom HEX picker, typography selector, and paper margins.
+   - `template-advanced-canvas.tsx` (Stage B): Interactive vertical element stack with Move Up/Down, alignment, eye toggle, and custom clinical notices.
+   - `template-live-preview.tsx`: Pixel-precise simulated paper canvas with instantaneous live updates and Front/Back page toggle.
+   - `template-editor-view.tsx`: Master view with keyboard shortcuts.
+5. **Integrated Prescription Document & Print Modal:**
+   - Updated `prescription-document.tsx` to dynamically render template colors, fonts, logo, signature, stamp, and watermark opacity.
+   - Updated `prescription-print-modal.tsx` to allow selecting among multiple templates at print time.
+6. **Automated Verification:**
+   - Created `tests/phase5-template.test.mjs` verifying `TMP-001` through `TMP-008`.
+   - Executed `pnpm test`: 30 unit tests passed across 15 suites in 114ms.
+   - Executed `npx tsc --noEmit`: 0 errors.
+   - Executed `next build`: 100% clean production build.
+
+
+---
+
+## Log Entry 009 — Phase 6: Central Backend & Admin Dashboard Implementation & Verification
+**Date:** 2026-11-14  
+**Author:** Lead Software Architect  
+
+### Scope & Delivered Features:
+1. **PostgreSQL Relational Schema Design (`src/lib/server/db/schema.sql`):**
+   - Engineered central tables: `medicine_sources`, `medicines`, `medicine_versions`, `medicine_changes`, `medicine_imports`, `medicine_suggestions`, and `audit_logs`.
+   - Designed PostgreSQL Trigram GIN indexes for fast Arabic and English fuzzy searching.
+2. **Central Data Access Layer & Dual Connection Model (`src/lib/server/db/central-db.ts`):**
+   - Configured `pg.Pool` connection pool with automatic initialization when `DATABASE_URL` is set.
+   - Built a schema-compliant in-memory fallback store seeded with official Egyptian formulary records for offline development, local unit testing, and standalone execution.
+3. **Central Medicine Engine (`src/lib/server/services/central-medicine.service.ts`):**
+   - Implemented CRUD operations with atomic change tracking (`create`, `update`, `deactivate`).
+   - Implemented `publishVersion()`: batches pending changes, calculates SHA/base checksum, increments monotonic version, and notifies listeners.
+   - Implemented synchronization manifest (`getManifest`), incremental delta changes (`getChanges`), and full snapshot (`getSnapshot`).
+   - Implemented crowdsourced doctor medicine suggestions (`submitDoctorSuggestion`, `listSuggestions`, `reviewSuggestion`).
+   - Implemented bulk import pipeline with conflict detection and Egyptian Drug Authority (EDA) attribution.
+4. **Next.js Central API Route Handlers (`src/app/api/v1/`):**
+   - `/api/v1/medicines/manifest` (GET)
+   - `/api/v1/medicines/changes` (GET)
+   - `/api/v1/medicines/snapshot` (GET)
+   - `/api/v1/medicines/suggestions` (GET / POST)
+   - `/api/v1/admin/medicines` (GET / POST)
+   - `/api/v1/admin/medicines/[id]` (GET / PUT / DELETE)
+   - `/api/v1/admin/versions/publish` (POST)
+   - `/api/v1/admin/suggestions/[id]/review` (POST)
+5. **Comprehensive Central Admin Portal (`/admin`):**
+   - Built `AdminDashboardView` at `src/app/admin/page.tsx`:
+     - Top KPI metrics (Total medicines, Active version, Pending changes, Pending doctor suggestions).
+     - Central formulary table with search, category filter, and add/edit/deactivate dialogs.
+     - Version publisher interface with release notes.
+     - Doctor suggestions review table with one-click approval and formulary promotion.
+     - Data sources viewer highlighting EDA and WHO standards.
+   - Integrated admin shortcut in `RoshtehAppShell` navigation.
+6. **Automated Verification:**
+   - Created `tests/phase6-backend.test.mjs` verifying `CEN-001` through `CEN-007`.
+   - Executed `pnpm test`: 40 tests passed across 20 suites in 128ms (0 failures).
+   - Executed `npx tsc --noEmit`: 0 errors.
+   - Executed `next build`: 100% clean production build producing 16 static and dynamic routes.

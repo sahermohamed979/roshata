@@ -18,6 +18,7 @@ import {
   Stethoscope,
   Printer,
   ChevronLeft,
+  ShieldAlert,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RoshtehLogo } from '../roshteh-logo';
@@ -58,6 +59,11 @@ const navItems: NavItem[] = [
     title: 'إعدادات العيادة والطباعة',
     href: '/settings',
     icon: Settings,
+  },
+  {
+    title: 'الإدارة المركزية',
+    href: '/admin',
+    icon: ShieldAlert,
   },
 ];
 

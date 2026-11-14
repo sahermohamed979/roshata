@@ -4,7 +4,17 @@ import React from 'react';
 import type { Prescription } from '@/types/prescription.types';
 import type { PrescriptionTemplate } from '@/types/template.types';
 import { paginatePrescriptionItems } from '../utils/prescription-pagination';
-import { Pill, Phone, MapPin, Calendar, Clock, Stethoscope, AlertTriangle, ShieldCheck } from 'lucide-react';
+import {
+  Pill,
+  Phone,
+  MapPin,
+  Calendar,
+  Clock,
+  Stethoscope,
+  AlertTriangle,
+  ShieldCheck,
+  Building2,
+} from 'lucide-react';
 
 interface PrescriptionDocumentProps {
   prescription: Prescription;
@@ -20,13 +30,26 @@ export function PrescriptionDocument({
   const isA5 = prescription.paperSize === 'A5';
 
   const doctorName = template?.doctorNameAr || 'د. إسلام عبدالله كريمة';
+  const doctorNameEn = template?.doctorNameEn || 'Dr. Eslam Abdallah Karima';
   const doctorTitle =
-    template?.medicalTitleAr || 'أخصائي الأنف والأذن والحنجرة وجراحات الرأس والرقبة والمناظير الدقيقة';
+    template?.medicalTitleAr || 'استشاري جراحة الأنف والأذن والحنجرة وجراحات الرأس والرقبة والمناظير الدقيقة';
+  const qualifications = template?.qualificationsAr || '';
   const clinicName = template?.clinicNameAr || 'عيادة نَفَس التخصصية';
-  const phone = template?.clinicPhones?.[0] || '01012345678 - 01234567890';
-  const address = template?.clinicAddress || 'القاهرة - مدينة نصر - برج الأطباء - الدور الرابع';
-  const returnDays = template?.returnNotice || 'الإعادة خلال أسبوع من تاريخ الكشف';
+  const phone = template?.clinicPhones?.[0] || '01000000000';
+  const address = template?.clinicAddress || 'القاهرة - المعادي - شارع النصر';
+  const returnDays = template?.returnNotice || 'الكشف ساري لمدة 14 يوماً من تاريخ الزيارة';
   const backNotes = template?.backPageNotes || 'يرجى الالتزام بمواعيد وجرعات العلاج المقررة، وإحضار الروشتة في الاستشارة.';
+
+  const primaryColor = template?.primaryColor || '#0B7B5E';
+  const fontFamily = template?.fontFamily || 'Cairo';
+  const showWatermark = template?.showWatermark ?? true;
+  const watermarkOpacity = template?.watermarkOpacity ?? 0.08;
+  const showLogo = (template?.showLogo ?? true) && !!template?.logoUrl;
+  const showSignature = template?.showSignature ?? true;
+  const showStamp = (template?.showStamp ?? false) && !!template?.stampUrl;
+  const showPatientBox = template?.showPatientBox ?? true;
+  const showReturnPolicy = template?.showReturnPolicy ?? true;
+  const headerLayout = template?.headerLayout || 'split';
 
   const dateFormatted = new Date(prescription.createdAt).toLocaleDateString('ar-EG', {
     year: 'numeric',
@@ -38,7 +61,11 @@ export function PrescriptionDocument({
   const pages = paginatePrescriptionItems(prescription.items, prescription.paperSize);
 
   return (
-    <div className="print-document-root text-slate-900 bg-white font-sans selection:bg-none" dir="rtl">
+    <div
+      className="print-document-root text-slate-900 bg-white selection:bg-none"
+      style={{ fontFamily }}
+      dir="rtl"
+    >
       {/* ════════════════════ PAGINATED MEDICATION PAGES ════════════════════ */}
       {pages.map((page) => (
         <div
@@ -51,34 +78,97 @@ export function PrescriptionDocument({
             padding: isA5 ? '16mm 14mm 14mm 14mm' : '22mm 18mm 18mm 18mm',
           }}
         >
-          <div>
+          {/* Rx Background Watermark */}
+          {showWatermark && (
+            <div
+              className="absolute inset-0 pointer-events-none flex items-center justify-center select-none"
+              style={{ opacity: watermarkOpacity }}
+            >
+              <span
+                className="font-serif italic font-black text-slate-900"
+                style={{ fontSize: isA5 ? '160px' : '230px' }}
+              >
+                ℞
+              </span>
+            </div>
+          )}
+
+          <div className="relative z-10">
             {/* Header: Full on Page 1, Compact on Continuation Pages */}
             {page.isFirstPage ? (
-              <header className="border-b-2 border-[#0B7B5E] pb-3 mb-3">
-                <div className="flex items-center justify-between gap-4">
+              <header
+                className={`pb-3 mb-3 border-b-2 ${
+                  headerLayout === 'modern' ? 'bg-slate-50/70 p-3 rounded-2xl border-slate-200' : ''
+                }`}
+                style={{ borderColor: primaryColor }}
+              >
+                <div
+                  className={`flex gap-4 ${
+                    headerLayout === 'centered'
+                      ? 'flex-col items-center text-center'
+                      : 'items-center justify-between'
+                  }`}
+                >
+                  {/* Doctor Info */}
                   <div className="space-y-0.5">
-                    <h1 className="text-xl sm:text-2xl font-black text-[#074C3A] leading-tight">
+                    <h1
+                      className="text-xl sm:text-2xl font-black leading-tight"
+                      style={{ color: primaryColor }}
+                    >
                       {doctorName}
                     </h1>
                     <p className="text-xs sm:text-sm font-bold text-slate-700 leading-snug">
                       {doctorTitle}
                     </p>
+                    {qualifications && (
+                      <p className="text-[11px] text-slate-500 font-medium">
+                        {qualifications}
+                      </p>
+                    )}
                     <p className="text-[11px] text-slate-500 font-semibold" dir="ltr">
-                      Dr. Eslam Abdallah Kareema · ENT & Head/Neck Surgeon
+                      {doctorNameEn}
                     </p>
                   </div>
 
-                  <div className="text-left shrink-0">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#E3F5EE] border border-[#0B7B5E]/30 text-[#074C3A]">
-                      <Stethoscope className="w-4 h-4 text-[#0B7B5E]" />
-                      <span className="text-xs font-black">{clinicName}</span>
+                  {/* Clinic Logo & Brand Badge */}
+                  <div
+                    className={`flex items-center gap-3 ${
+                      headerLayout === 'centered' ? 'justify-center' : 'text-left shrink-0'
+                    }`}
+                  >
+                    {showLogo && template?.logoUrl && (
+                      <img
+                        src={template.logoUrl}
+                        alt="Logo"
+                        className="w-12 h-12 object-contain rounded-xl border border-slate-200 p-0.5"
+                      />
+                    )}
+                    <div>
+                      <div
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border font-black text-xs"
+                        style={{
+                          color: primaryColor,
+                          borderColor: `${primaryColor}40`,
+                          backgroundColor: `${primaryColor}12`,
+                        }}
+                      >
+                        <Building2 className="w-4 h-4" />
+                        <span>{clinicName}</span>
+                      </div>
+                      {template?.syndicateNumber && (
+                        <div className="text-[10px] text-slate-400 mt-0.5 font-mono text-center">
+                          {template.syndicateNumber}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               </header>
             ) : (
               <header className="border-b border-slate-200 pb-2 mb-3 flex items-center justify-between text-xs text-slate-500 font-bold">
-                <span className="text-[#074C3A] font-black">{doctorName}</span>
+                <span className="font-black" style={{ color: primaryColor }}>
+                  {doctorName}
+                </span>
                 <span>
                   تابع روشتة: {prescription.patient.name} (صفحة {page.pageNumber} من {page.totalPages})
                 </span>
@@ -86,7 +176,7 @@ export function PrescriptionDocument({
             )}
 
             {/* Patient Bar (Full on Page 1, minimal on subsequent) */}
-            {page.isFirstPage ? (
+            {page.isFirstPage && showPatientBox ? (
               <section className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 mb-3.5 grid grid-cols-12 gap-2 text-xs">
                 <div className="col-span-6 font-bold flex items-center gap-1.5">
                   <span className="text-slate-500">اسم المريض:</span>
@@ -98,75 +188,85 @@ export function PrescriptionDocument({
                 <div className="col-span-3 font-semibold flex items-center gap-1">
                   <span className="text-slate-500">العمر:</span>
                   <span className="font-bold text-slate-800">
-                    {prescription.patient.age ? `${prescription.patient.age}` : '—'}
+                    {prescription.patient.age ? `${prescription.patient.age} سنة` : '—'}
                   </span>
                 </div>
 
-                <div className="col-span-3 text-left font-semibold flex items-center justify-end gap-1">
+                <div className="col-span-3 font-semibold flex items-center gap-1 justify-end">
                   <span className="text-slate-500">التاريخ:</span>
-                  <span className="font-bold text-slate-800">{dateFormatted}</span>
+                  <span className="font-mono text-slate-800 font-bold">{dateFormatted}</span>
                 </div>
 
-                {prescription.diagnosis && (
-                  <div className="col-span-12 pt-1 border-t border-slate-200/60 flex items-center gap-1.5 text-[11px]">
-                    <span className="text-slate-500 font-bold">التشخيص:</span>
-                    <span className="font-bold text-[#0B7B5E]">{prescription.diagnosis}</span>
+                {(prescription.patient.gender || prescription.patient.weight || prescription.diagnosis) && (
+                  <div className="col-span-12 pt-1.5 border-t border-slate-200/80 flex items-center gap-4 text-[11px] text-slate-600">
+                    {prescription.patient.gender && (
+                      <span>
+                        النوع: {prescription.patient.gender === 'MALE' ? 'ذكر' : prescription.patient.gender === 'FEMALE' ? 'أنثى' : 'أخرى'}
+                      </span>
+                    )}
+                    {prescription.patient.weight && (
+                      <span>الوزن: {prescription.patient.weight} كجم</span>
+                    )}
+                    {prescription.diagnosis && (
+                      <span className="font-bold text-slate-800">
+                        التشخيص: {prescription.diagnosis}
+                      </span>
+                    )}
                   </div>
                 )}
               </section>
             ) : null}
 
-            {/* Rx Watermark Symbol and Medications */}
-            <main className="relative">
-              {page.isFirstPage && (
-                <div className="absolute top-0 right-0 font-serif italic text-6xl font-black text-[#0B7B5E]/15 select-none pointer-events-none -mt-3">
+            {/* Main Rx Symbol & Prescribed Medications */}
+            <main>
+              <div className="flex items-center justify-between mb-2">
+                <span
+                  className="font-serif italic font-black text-2xl sm:text-3xl leading-none select-none"
+                  style={{ color: primaryColor }}
+                >
                   ℞
-                </div>
-              )}
+                </span>
+                <span className="text-xs font-bold text-slate-400">
+                  العلاج الموصوف (Prescribed Medication)
+                </span>
+              </div>
 
-              {/* Items List */}
-              <div className="space-y-3.5 pt-1">
-                {page.items.map((item) => (
+              {/* Medication List */}
+              <div
+                className="space-y-3.5 border-r-2 pr-3"
+                style={{ borderColor: `${primaryColor}60` }}
+              >
+                {page.items.map((item, idx) => (
                   <div
                     key={item.id}
-                    className="relative pr-6 break-inside-avoid print:break-inside-avoid"
-                    style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}
+                    className="break-inside-avoid pb-2 border-b border-slate-100 last:border-0"
                   >
-                    {/* Display Order Counter */}
-                    <div className="absolute right-0 top-0.5 text-xs font-black text-[#0B7B5E]">
-                      {item.displayOrder}.
-                    </div>
-
-                    {/* Trade Name and Strength */}
-                    <div className="flex items-baseline gap-2 flex-wrap">
-                      <span className="text-base font-black text-slate-900 tracking-wide" dir="ltr">
-                        {item.nameSnapshotEn}
+                    <div className="flex items-baseline justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-white shrink-0"
+                          style={{ backgroundColor: primaryColor }}
+                        >
+                          {page.isFirstPage ? idx + 1 : (page.pageNumber - 1) * 5 + idx + 1}
+                        </span>
+                        <h2 className="text-sm sm:text-base font-black text-slate-900" dir="ltr">
+                          {item.nameSnapshotEn || item.nameSnapshotAr}
+                        </h2>
+                      </div>
+                      <span className="text-xs text-slate-500 font-semibold">
+                        {item.dosageFormSnapshot || item.strengthSnapshot || ''}
                       </span>
-                      {item.strengthSnapshot && (
-                        <span className="text-xs font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded" dir="ltr">
-                          {item.strengthSnapshot}
-                        </span>
-                      )}
-                      {item.dosageFormSnapshot && (
-                        <span className="text-xs text-slate-600 font-semibold">
-                          ({item.dosageFormSnapshot})
-                        </span>
-                      )}
                     </div>
 
-                    {/* Clinical Directions */}
-                    <div className="text-xs font-bold text-slate-700 mt-1 flex items-center gap-2 flex-wrap">
-                      <span className="text-[#074C3A] bg-[#E3F5EE] px-2 py-0.5 rounded-md font-black">
+                    {/* Dosage, Frequency, Duration & Timing */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-700 mt-1 mr-7">
+                      <span className="text-slate-900 bg-slate-100 px-2 py-0.5 rounded">
                         {item.dosage}
                       </span>
                       <span>•</span>
-                      <span>{item.frequency}</span>
-                      {item.duration && (
-                        <>
-                          <span>•</span>
-                          <span className="text-slate-600">{item.duration}</span>
-                        </>
-                      )}
+                      <span style={{ color: primaryColor }}>{item.frequency}</span>
+                      <span>•</span>
+                      <span className="text-slate-600">{item.duration}</span>
                       {item.timing && (
                         <>
                           <span>•</span>
@@ -187,7 +287,7 @@ export function PrescriptionDocument({
 
                     {/* Specific Instructions */}
                     {item.instructions && (
-                      <p className="text-[11px] font-semibold text-slate-500 mt-0.5 italic">
+                      <p className="text-[11px] font-semibold text-slate-500 mr-7 mt-0.5 italic">
                         ملاحظة: {item.instructions}
                       </p>
                     )}
@@ -202,22 +302,62 @@ export function PrescriptionDocument({
                   <span className="text-amber-950 font-medium">{prescription.notes}</span>
                 </div>
               )}
+
+              {/* Custom Elements from Stage B Canvas */}
+              {page.isLastPage &&
+                template?.elements
+                  ?.filter((el) => el.visible && el.type === 'custom_text' && el.customText)
+                  .map((el) => (
+                    <div
+                      key={el.id}
+                      className="mt-3 p-2 rounded-lg bg-teal-50/60 border border-teal-200/60 text-xs text-teal-900 font-bold"
+                      style={{ textAlign: el.alignment }}
+                    >
+                      {el.customText}
+                    </div>
+                  ))}
             </main>
           </div>
 
           {/* Footer Area */}
-          <footer className="border-t-2 border-slate-200 pt-2.5 mt-3 text-[11px] text-slate-600">
+          <footer className="relative z-10 border-t-2 border-slate-200 pt-2.5 mt-3 text-[11px] text-slate-600">
             {page.isLastPage && (
               <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-1.5 font-bold text-[#074C3A]">
-                  <Calendar className="w-3.5 h-3.5 text-[#0B7B5E]" />
-                  <span>{returnDays}</span>
-                </div>
+                {showReturnPolicy && (
+                  <div className="flex items-center gap-1.5 font-bold" style={{ color: primaryColor }}>
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>{returnDays}</span>
+                  </div>
+                )}
 
-                {/* Signature Area */}
-                <div className="text-center font-bold">
-                  <span className="text-slate-400 block text-[10px]">توقيع الطبيب</span>
-                  <span className="text-slate-800 font-serif italic text-sm">د. إسلام كريمة</span>
+                {/* Doctor Signature & Stamp Area */}
+                <div className="flex items-center gap-3">
+                  {showStamp && template?.stampUrl && (
+                    <div className="w-14 h-14 rounded-full overflow-hidden opacity-85 border border-dashed border-slate-300">
+                      <img
+                        src={template.stampUrl}
+                        alt="Stamp"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  )}
+
+                  {showSignature && (
+                    <div className="text-center font-bold">
+                      <span className="text-slate-400 block text-[10px]">توقيع الطبيب</span>
+                      {template?.signatureUrl ? (
+                        <img
+                          src={template.signatureUrl}
+                          alt="Signature"
+                          className="h-8 object-contain inline-block"
+                        />
+                      ) : (
+                        <span className="text-slate-800 font-serif italic text-sm">
+                          {doctorName}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -256,10 +396,15 @@ export function PrescriptionDocument({
         >
           <div>
             {/* Back Header */}
-            <header className="border-b-2 border-[#0B7B5E] pb-2.5 mb-4 text-center">
+            <header
+              className="border-b-2 pb-2.5 mb-4 text-center"
+              style={{ borderColor: primaryColor }}
+            >
               <div className="inline-flex items-center gap-2 mb-1">
-                <ShieldCheck className="w-5 h-5 text-[#0B7B5E]" />
-                <h2 className="text-lg sm:text-xl font-black text-[#074C3A]">إرشادات وتعليمات طبية هامة</h2>
+                <ShieldCheck className="w-5 h-5" style={{ color: primaryColor }} />
+                <h2 className="text-lg sm:text-xl font-black" style={{ color: primaryColor }}>
+                  إرشادات وتعليمات طبية هامة
+                </h2>
               </div>
               <p className="text-xs text-slate-500 font-medium">
                 حرصاً على سلامتكم وسرعة استجابتكم للعلاج، يرجى الالتزام بالتعليمات التالية
@@ -270,7 +415,7 @@ export function PrescriptionDocument({
               {/* General Medicine Compliance */}
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
                 <h3 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#0B7B5E]" />
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }} />
                   تناول الأدوية بدقة وفق المواعيد المقررة
                 </h3>
                 <p className="text-slate-600 leading-relaxed font-medium">
@@ -294,8 +439,8 @@ export function PrescriptionDocument({
 
               {/* Clinic Specific Back Notes */}
               {backNotes && (
-                <div className="p-3 bg-[#E3F5EE]/60 rounded-xl border border-[#45DBA5]/40 space-y-1">
-                  <h3 className="font-bold text-[#074C3A] text-sm">ملاحظات خاصة من الطبيب</h3>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <h3 className="font-bold text-slate-900 text-sm">ملاحظات خاصة من الطبيب</h3>
                   <p className="text-slate-700 leading-relaxed font-medium text-[11px] whitespace-pre-line">
                     {backNotes}
                   </p>
@@ -303,12 +448,14 @@ export function PrescriptionDocument({
               )}
 
               {/* Return Policy */}
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                <h3 className="font-bold text-slate-800 text-sm">ميعاد استشارة المتابعة (الإعادة)</h3>
-                <p className="text-slate-600 leading-relaxed font-medium text-[11px]">
-                  المتابعة الدقيقة تضمن التعافي التام والتأكد من استقرار الحالة. {returnDays}. يرجى إحضار هذه الروشتة في موعد الاستشارة.
-                </p>
-              </div>
+              {showReturnPolicy && (
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <h3 className="font-bold text-slate-800 text-sm">ميعاد استشارة المتابعة (الإعادة)</h3>
+                  <p className="text-slate-600 leading-relaxed font-medium text-[11px]">
+                    المتابعة الدقيقة تضمن التعافي التام والتأكد من استقرار الحالة. {returnDays}. يرجى إحضار هذه الروشتة في موعد الاستشارة.
+                  </p>
+                </div>
+              )}
             </main>
           </div>
 
