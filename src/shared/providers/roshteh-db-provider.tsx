@@ -56,6 +56,13 @@ export const RoshtehDatabaseProvider = ({ children }: { children: React.ReactNod
           setIsDbReady(true);
         });
 
+      // 3. Register Service Worker for PWA and offline asset availability
+      if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+        navigator.serviceWorker.register('/sw.js').catch((err) => {
+          console.debug('ServiceWorker registration optional:', err);
+        });
+      }
+
       return () => {
         window.removeEventListener('online', handleOnline);
         window.removeEventListener('offline', handleOffline);

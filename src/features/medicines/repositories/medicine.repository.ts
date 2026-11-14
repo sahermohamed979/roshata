@@ -39,59 +39,88 @@ export class MedicineRepository {
     const isBarcodeQuery = Boolean(barcodeTerm || /^\d{6,}$/.test(rawTerm));
     const cleanBarcode = barcodeTerm || (isBarcodeQuery ? rawTerm : '');
 
-    // 1. Search custom medicines (Doctor-specific)
-    const customMatches = await db.customMedicines
-      .filter((m) => {
-        if (m.doctorId !== doctorId && m.doctorId !== 'default-doctor') return false;
-
-        if (category && category !== 'الكل' && category !== 'أدوية مخصصة') {
-          if (!m.category?.includes(category.split(' ')[0])) return false;
-        }
-
-        if (dosageForm && dosageForm !== 'الكل') {
-          if (!m.dosageForm?.includes(dosageForm)) return false;
-        }
-
-        // Direct barcode match
-        if (cleanBarcode && m.barcode) {
-          return m.barcode.includes(cleanBarcode);
-        }
-
-        if (!rawTerm) return true;
-
-        const targetAr = normalizeArabicText(
-          `${m.nameAr} ${m.brandName || ''} ${m.activeIngredient || ''}`
-        );
-        const targetEn = normalizeEnglishText(
-          `${m.nameEn} ${m.brandName || ''} ${m.activeIngredient || ''}`
-        );
-
-        return (
-          targetAr.includes(normAr) ||
-          targetEn.includes(normEn) ||
-          (m.barcode ? m.barcode.includes(rawTerm) : false)
-        );
-      })
-      .limit(limit)
-      .toArray();
-
-    // 2. Search global catalog (Skip if onlyCustom is requested)
+    let customMatches: CustomMedicine[] = [];
     let globalMatches: Medicine[] = [];
-    if (!query.onlyCustom) {
-      globalMatches = await db.medicines
-        .filter((m) => {
-          if (m.status === 'discontinued') return false;
+    let handledByFastIndex = false;
 
-          if (category && category !== 'الكل') {
+    // Fast Path 1: Direct Indexed Barcode Lookup (O(1) / O(log N))
+    if (cleanBarcode) {
+      try {
+        const [customByBarcode, globalByBarcode] = await Promise.all([
+          db.customMedicines.where('barcode').equals(cleanBarcode).toArray(),
+          query.onlyCustom ? Promise.resolve([]) : db.medicines.where('barcode').equals(cleanBarcode).toArray(),
+        ]);
+
+        if (customByBarcode.length > 0 || globalByBarcode.length > 0) {
+          customMatches = customByBarcode.filter(
+            (m) => m.doctorId === doctorId || m.doctorId === 'default-doctor'
+          );
+          globalMatches = globalByBarcode.filter((m) => m.status !== 'discontinued');
+          handledByFastIndex = true;
+        }
+      } catch {
+        // Fallback gracefully if index query is interrupted
+      }
+    }
+
+    // Fast Path 2: Direct Indexed Token Lookup for 2+ Character Queries (B-Tree Multi-entry index)
+    if (!handledByFastIndex && (normEn.length >= 2 || normAr.length >= 2)) {
+      const primaryToken = normEn.length >= 2 ? normEn : normAr;
+      try {
+        const [indexedCustom, indexedGlobal] = await Promise.all([
+          db.customMedicines.where('searchTokens').equals(primaryToken).limit(limit * 2).toArray(),
+          query.onlyCustom
+            ? Promise.resolve([])
+            : db.medicines.where('searchTokens').equals(primaryToken).limit(limit * 2).toArray(),
+        ]);
+
+        if (indexedCustom.length > 0 || indexedGlobal.length > 0) {
+          customMatches = indexedCustom.filter((m) => {
+            if (m.doctorId !== doctorId && m.doctorId !== 'default-doctor') return false;
+            if (category && category !== 'الكل' && category !== 'أدوية مخصصة') {
+              if (!m.category?.includes(category.split(' ')[0])) return false;
+            }
+            if (dosageForm && dosageForm !== 'الكل') {
+              if (!m.dosageForm?.includes(dosageForm)) return false;
+            }
+            return true;
+          });
+
+          globalMatches = indexedGlobal.filter((m) => {
+            if (m.status === 'discontinued') return false;
+            if (category && category !== 'الكل') {
+              if (!m.category?.includes(category.split(' ')[0])) return false;
+            }
+            if (dosageForm && dosageForm !== 'الكل') {
+              const form = m.dosageForm || m.pharmaceuticalForm;
+              if (!form?.includes(dosageForm)) return false;
+            }
+            return true;
+          });
+
+          if (customMatches.length > 0 || globalMatches.length > 0) {
+            handledByFastIndex = true;
+          }
+        }
+      } catch {
+        // Fallback gracefully to filter
+      }
+    }
+
+    // Fallback Path 3: Comprehensive Scan for Single-character, Substring, or Broad Filters
+    if (!handledByFastIndex) {
+      customMatches = await db.customMedicines
+        .filter((m) => {
+          if (m.doctorId !== doctorId && m.doctorId !== 'default-doctor') return false;
+
+          if (category && category !== 'الكل' && category !== 'أدوية مخصصة') {
             if (!m.category?.includes(category.split(' ')[0])) return false;
           }
 
           if (dosageForm && dosageForm !== 'الكل') {
-            const form = m.dosageForm || m.pharmaceuticalForm;
-            if (!form?.includes(dosageForm)) return false;
+            if (!m.dosageForm?.includes(dosageForm)) return false;
           }
 
-          // Direct barcode match
           if (cleanBarcode && m.barcode) {
             return m.barcode.includes(cleanBarcode);
           }
@@ -113,6 +142,43 @@ export class MedicineRepository {
         })
         .limit(limit)
         .toArray();
+
+      if (!query.onlyCustom) {
+        globalMatches = await db.medicines
+          .filter((m) => {
+            if (m.status === 'discontinued') return false;
+
+            if (category && category !== 'الكل') {
+              if (!m.category?.includes(category.split(' ')[0])) return false;
+            }
+
+            if (dosageForm && dosageForm !== 'الكل') {
+              const form = m.dosageForm || m.pharmaceuticalForm;
+              if (!form?.includes(dosageForm)) return false;
+            }
+
+            if (cleanBarcode && m.barcode) {
+              return m.barcode.includes(cleanBarcode);
+            }
+
+            if (!rawTerm) return true;
+
+            const targetAr = normalizeArabicText(
+              `${m.nameAr} ${m.brandName || ''} ${m.activeIngredient || ''}`
+            );
+            const targetEn = normalizeEnglishText(
+              `${m.nameEn} ${m.brandName || ''} ${m.activeIngredient || ''}`
+            );
+
+            return (
+              targetAr.includes(normAr) ||
+              targetEn.includes(normEn) ||
+              (m.barcode ? m.barcode.includes(rawTerm) : false)
+            );
+          })
+          .limit(limit)
+          .toArray();
+      }
     }
 
     // 3. Map into unified structure

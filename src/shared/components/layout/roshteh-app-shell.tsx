@@ -19,11 +19,14 @@ import {
   Printer,
   ChevronLeft,
   ShieldAlert,
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RoshtehLogo } from '../roshteh-logo';
 import { useNetworkStatus } from '@/shared/providers/roshteh-db-provider';
 import { useMedicineStore } from '@/stores/medicine.store';
+import { useSyncStore } from '@/stores/sync.store';
+import { SyncStatusDialog } from '@/features/medicines/components/sync-status-dialog';
 
 interface NavItem {
   title: string;
@@ -71,7 +74,16 @@ export const RoshtehAppShell = ({ children }: { children: React.ReactNode }) => 
   const pathname = usePathname();
   const { isOnline, isDbReady } = useNetworkStatus();
   const { totalGlobalCount, totalCustomCount } = useMedicineStore();
+  const { localVersion, hasUpdate, isMonthlyDue, checkForUpdates } = useSyncStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [syncDialogOpen, setSyncDialogOpen] = useState(false);
+
+  // Check for updates on mount if online (SYN-009)
+  React.useEffect(() => {
+    if (isOnline) {
+      checkForUpdates();
+    }
+  }, [isOnline, checkForUpdates]);
 
   const isActive = (item: NavItem) => {
     if (item.exact) return pathname === item.href;
@@ -96,7 +108,29 @@ export const RoshtehAppShell = ({ children }: { children: React.ReactNode }) => 
         </div>
 
         {/* Center / Right Badges */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Synchronization Status Button (SYN-008, SYN-009) */}
+          <button
+            type="button"
+            onClick={() => setSyncDialogOpen(true)}
+            className={cn(
+              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer shadow-2xs select-none',
+              hasUpdate
+                ? 'bg-emerald-50 text-[#074C3A] border-emerald-300 ring-2 ring-emerald-400/30'
+                : isMonthlyDue
+                ? 'bg-amber-50 text-amber-900 border-amber-300'
+                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+            )}
+            title="حالة تزامن قاعدة الأدوية مع السيرفر المركزي"
+          >
+            <RefreshCw className={cn('w-3.5 h-3.5', hasUpdate ? 'text-[#0B7B5E]' : 'text-slate-500')} />
+            <span className="hidden xs:inline">قاعدة الأدوية:</span>
+            <span className="font-mono font-black">v{localVersion}</span>
+            {hasUpdate && (
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            )}
+          </button>
+
           {/* Offline / Online Status Badge */}
           <div
             className={cn(
@@ -130,6 +164,9 @@ export const RoshtehAppShell = ({ children }: { children: React.ReactNode }) => 
           </Link>
         </div>
       </header>
+
+      {/* Sync Status Dialog Modal */}
+      <SyncStatusDialog open={syncDialogOpen} onOpenChange={setSyncDialogOpen} />
 
       <div className="flex-1 flex overflow-hidden">
         {/* ─── Desktop Sidebar ─────────────────────────────────────────────── */}
