@@ -1,0 +1,470 @@
+{
+  "Common": {
+    "whatsappChat": "WhatsApp Chat",
+    "whatsappAria": "Contact via WhatsApp at +20 10 50792622",
+    "bookViaWhatsApp": "Book Your Appointment Now via WhatsApp",
+    "whatsappMsgGeneral": "Hello Dr. Eslam, I would like to book an appointment at the ENT clinic.",
+    "whatsappMsgConsultation": "Hello Dr. Eslam, I would like to book a consultation regarding: {service}"
+  },
+  "Nav": {
+    "home": "Home",
+    "about": "About & Credentials",
+    "services": "Services",
+    "clinic": "Our Clinic",
+    "reviews": "Patient Reviews",
+    "bookNow": "Book Now",
+    "doctorName": "Dr. Eslam Abdallah Kareema"
+  },
+  "Hero": {
+    "kicker": "ENT CLINIC · EASLAM ABDALLAH KAREEMA",
+    "doctorTitleFirst": "Dr. Eslam",
+    "doctorTitleSecond": "Abdallah Kareema",
+    "speciality": "Specialist in Ear, Nose and Throat (ENT) and Head & Neck Surgeries with the latest diagnostic and microscopic endoscopy methods.",
+    "bookCheckup": "Book Checkup",
+    "medicalServices": "Medical Services",
+    "stat1Title": "Endoscopy",
+    "stat1Desc": "Ear · Nose · Throat",
+    "stat2Title": "Micro-Surgeries",
+    "stat2Desc": "Microscopic & Endoscopic",
+    "stat3Title": "Functional Aesthetics",
+    "stat3Desc": "Nose & Ear"
+  },
+  "Services": {
+    "kicker": "OUR SERVICES",
+    "title": "Medical Services",
+    "subtitle": "Comprehensive ENT care utilizing advanced endoscopic and precision surgical techniques.",
+    "bookConsultation": "Book Consultation",
+    "items": {
+      "s-01": {
+        "title": "Nose & Sinus Endoscopy",
+        "description": "Diagnosis and endoscopic management of sinus and nasal septum conditions."
+      },
+      "s-02": {
+        "title": "Microscopic Ear Surgery",
+        "description": "Precision microscopic surgeries to improve hearing and treat ear diseases."
+      },
+      "s-03": {
+        "title": "Endoscopic Ear Surgery",
+        "description": "State-of-the-art minimally invasive endoscopic ear interventions."
+      },
+      "s-04": {
+        "title": "Tonsillectomy & Adenoidectomy",
+        "description": "Modern surgical techniques for both pediatric and adult patients."
+      },
+      "s-05": {
+        "title": "Laryngeal & Tracheal Endoscopy",
+        "description": "Comprehensive evaluation of voice, swallowing, and airway disorders."
+      },
+      "s-06": {
+        "title": "Foreign Body Extraction",
+        "description": "Safe, gentle endoscopic foreign body removal from ear, nose, and throat."
+      },
+      "s-07": {
+        "title": "Snoring & Sleep Apnea Surgery",
+        "description": "Assessment and surgical management of snoring causes when indicated."
+      },
+      "s-08": {
+        "title": "Functional Rhinoplasty",
+        "description": "Restoring nasal airway function while preserving natural cosmetic contours."
+      },
+      "s-09": {
+        "title": "Otoplasty (Prominent Ear Correction)",
+        "description": "Aesthetic and corrective ear reshaping for children and adults."
+      }
+    }
+  },
+  "About": {
+    "kicker": "ABOUT THE DOCTOR",
+    "title": "About & Credentials",
+    "subtitle": "[Write a brief bio about the doctor and clinical philosophy here]",
+    "photoPlaceholder": "[Doctor's clinical work photo]",
+    "photoBadge": "Microscopic Endoscopic Surgeries",
+    "milestones": {
+      "m-1": {
+        "year": "[Year]",
+        "degree": "[Bachelor of Medicine & Surgery (MBBCh)]",
+        "institution": "[University]"
+      },
+      "m-2": {
+        "year": "[Year]",
+        "degree": "[Master's Degree / Diploma]",
+        "institution": "[Institution]"
+      },
+      "m-3": {
+        "year": "[Year]",
+        "degree": "[Doctorate / Fellowship]",
+        "institution": "[Authority]"
+      },
+      "m-4": {
+        "year": "[Year — Present]",
+        "degree": "[Current Position]",
+        "institution": "[Hospital / Clinic]"
+      }
+    }
+  },
+  "Clinic": {
+    "kicker": "OUR CLINIC",
+    "title": "Our Clinic",
+    "receptionDesc": "Designed with the highest standards of patient comfort and medical sterilization.",
+    "facilities": {
+      "c-main": "[Reception & Front Desk Photo]",
+      "c-checkup": "[Examination Room]",
+      "c-devices": "[Medical Devices]",
+      "c-endoscopy": "[Endoscopy Suite]",
+      "c-waiting": "[Waiting Lounge]"
+    }
+  },
+  "Reviews": {
+    "kicker": "PATIENT REVIEWS",
+    "title": "Patient Reviews",
+    "verifiedPatient": "Verified Patient",
+    "photo": "Photo",
+    "items": {
+      "r-1": {
+        "text": "[Patient review statement as written]",
+        "name": "[Patient Name]"
+      },
+      "r-2": {
+        "text": "[Patient review statement as written]",
+        "name": "[Patient Name]"
+      },
+      "r-3": {
+        "text": "[Patient review statement as written]",
+        "name": "[Patient Name]"
+      }
+    }
+  },
+  "WhatsAppBooking": {
+    "kicker": "BOOK VIA WHATSAPP",
+    "title": "Book Your Appointment via WhatsApp",
+    "description": "Bookings are handled exclusively via WhatsApp. Send us a message and our clinic team will promptly arrange the most suitable appointment for you.",
+    "step1": "Send Message",
+    "step2": "Pick Date & Time",
+    "step3": "Confirm Booking",
+    "bookBtn": "Book Now on WhatsApp",
+    "phoneLabel": "WhatsApp Number",
+    "phoneValue": "+20 10 50792622",
+    "addressLabel": "Address",
+    "addressValue": "[Clinic Address]",
+    "hoursLabel": "Working Hours",
+    "hoursValue": "[Working Days & Hours]"
+  },
+  "Footer": {
+    "aboutDoctor": "Specialist in ENT diseases and surgeries using the latest diagnosis and treatment technologies.",
+    "quickLinks": "Quick Links",
+    "servicesTitle": "Services",
+    "contactUs": "Contact Us",
+    "whatsapp": "WhatsApp",
+    "facebook": "Facebook: [Page Link]",
+    "address": "[Clinic Address]",
+    "rights": "© Dr. Eslam Abdallah Kareema — ENT Clinic. All rights reserved.",
+    "developer": "Design & Development [Your Name]",
+    "links": {
+      "home": "Home",
+      "about": "About & Credentials",
+      "clinic": "Our Clinic",
+      "reviews": "Patient Reviews",
+      "sinus": "Nose & Sinus Endoscopy",
+      "earSurgery": "Ear Surgeries",
+      "tonsils": "Tonsils & Adenoids",
+      "larynx": "Larynx Endoscopy",
+      "rhinoplasty": "Functional Rhinoplasty"
+    }
+  },
+  "Auth": {
+    "login": {
+      "metaTitle": "Sign In — Clinic Management System | Dr. Eslam Kareema",
+      "metaDescription": "Sign in to Dr. Eslam Abdallah Kareema ENT Clinic Management System",
+      "title": "Sign In",
+      "subtitle": "Enter your credentials to access the system",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Enter username",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "submitBtn": "Login",
+      "submitting": "Signing in...",
+      "brandTitle": "ENT Clinic",
+      "heroTitleLine1": "Clinic Management",
+      "heroTitleLine2": "System",
+      "heroDesc": "Dr. Eslam Abdallah Kareema — Manage appointments, patients, and payments in one place.",
+      "switchLang": "العربية",
+      "backToHome": "Back to Home",
+      "footerCopyright": "Clinic Management System © Dr. Eslam Kareema — All rights reserved",
+      "heroAria": "Clinic System Information",
+      "formAria": "Sign In",
+      "validationRequired": "Please enter both username and password",
+      "usernameRequired": "Username is required",
+      "usernameMin": "Username must be at least 3 characters",
+      "passwordRequired": "Password is required",
+      "unknownError": "An unexpected error occurred, please try again",
+      "invalidCredentials": "Invalid credentials, please check your username and password",
+      "login-success": "Logged in successfully! Welcome back",
+      "loginSuccess": "Logged in successfully! Welcome back"
+    }
+  },
+  "Dashboard": {
+    "systemTitle": "Clinic Management System",
+    "version": "v1.0",
+    "notifications": "Notifications",
+    "notificationMenu": {
+      "title": "Notifications",
+      "markAllRead": "Mark all as read",
+      "newCount": "{count} new",
+      "viewAll": "View all notifications",
+      "empty": "No new notifications at this time ✓",
+      "items": {
+        "booking": {
+          "title": "New Appointment Booked",
+          "desc": "Mohamed Alaa — ENT Checkup",
+          "time": "5m ago"
+        },
+        "payment": {
+          "title": "Payment Confirmed",
+          "desc": "Received 300 EGP for new checkup",
+          "time": "20m ago"
+        },
+        "waiting": {
+          "title": "Queue Alert",
+          "desc": "Patient waiting time exceeded 15 mins",
+          "time": "35m ago"
+        }
+      }
+    },
+    "signOut": "Sign out",
+    "roles": {
+      "admin": "Panel: Admin",
+      "doctor": "Panel: Doctor",
+      "receptionist": "Panel: Reception"
+    },
+    "greetings": {
+      "admin": "Welcome, Admin",
+      "doctor": "Welcome, Dr. Eslam",
+      "receptionist": "Welcome, Reception"
+    },
+    "doctorStatus": {
+      "title": "Doctor Status",
+      "available": "Doctor: Available",
+      "takeBreak": "Take a Break"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "appointments": "Appointments",
+      "newBooking": "New Booking",
+      "patients": "Patients",
+      "payments": "Payments",
+      "expenses": "Expenses",
+      "closing": "Daily Closing",
+      "reports": "Reports",
+      "users": "Users",
+      "audit": "Audit Log",
+      "settings": "Settings",
+      "todayCheckup": "Today's Clinic",
+      "clinicalSearch": "Clinical Search",
+      "drugs": "Medications & Catalog",
+      "doctorRevenue": "Consultations & Revenue",
+      "calendar": "Calendar & Schedule",
+      "weeklyHours": "Weekly Hours",
+      "queue": "Waiting Queue",
+      "pricing": "Service Pricing"
+    },
+    "admin": {
+      "title": "Dashboard",
+      "subtitle": "Clinic performance and operations overview",
+      "dateRange": "From 01-11-2026 to 02-11-2026",
+      "stats": {
+        "revenue": "Revenue",
+        "expenses": "Expenses",
+        "netProfit": "Net Profit",
+        "visits": "Visits",
+        "averageVisit": "Avg Visit",
+        "currency": "EGP"
+      },
+      "weeklyRevenue": "Weekly Revenue (Illustrative Chart)"
+    },
+    "doctor": {
+      "title": "Today's Clinic Screen",
+      "subtitle": "Live queue monitoring, patient flow, and clinical examinations",
+      "waitingStatus": "Waiting",
+      "remainingCases": "remaining",
+      "completedCheckup": "Examined",
+      "doneCheckup": "completed",
+      "totalCases": "Total Cases Today",
+      "registeredAppointments": "appointments",
+      "queueTitle": "Waiting Queue",
+      "totalBadge": "Total {count}",
+      "tabs": {
+        "waiting": "Waiting",
+        "done": "Examined",
+        "all": "All"
+      },
+      "emptyQueue": "No patients currently in waiting ✓",
+      "emptyRoomTitle": "No patient currently in the exam room",
+      "emptyRoomSubtitle": "The queue is currently empty",
+      "examRoom": "Examination Room",
+      "activeExam": "Exam In Progress",
+      "admitNext": "Admit Next Patient",
+      "admitNow": "Admit Patient",
+      "finishExam": "Finish Exam & Send to Reception",
+      "finishing": "Finishing...",
+      "admitting": "Admitting...",
+      "viewPatientFile": "Open Medical File",
+      "patientInfo": "Patient Info",
+      "financialSummary": "Financial Status",
+      "paid": "Paid in Full",
+      "remaining": "Remaining",
+      "egp": "EGP",
+      "checkup": "Checkup",
+      "consultation": "Consultation",
+      "readyForNext": "The examination room is ready for the next patient",
+      "clickToAdmit": "Click to admit the next waiting patient",
+      "waitMinutes": "{minutes} mins",
+      "yearsOld": "yrs"
+    },
+    "receptionist": {
+      "title": "Waiting Queue",
+      "subtitle": "Today's queue, patient flow coordination, and check-ins",
+      "bookPatient": "+ Book / Register Patient",
+      "table": {
+        "number": "No.",
+        "patient": "Patient",
+        "appointmentType": "Type",
+        "status": "Status",
+        "waitingDuration": "Wait Time",
+        "actions": "Actions",
+        "checkup": "Checkup",
+        "consultation": "Consultation",
+        "waiting": "Waiting",
+        "inCheckup": "In Exam",
+        "minutes": "{count} mins",
+        "admit": "Admit",
+        "postpone": "Postpone",
+        "cancel": "Cancel",
+        "patientPlaceholder": "[Patient Name]",
+        "financialStatus": "Financial Status",
+        "doctor": "Doctor",
+        "paidInFull": "Paid in Full",
+        "remaining": "Remaining",
+        "exempt": "Fee Exempt",
+        "unpaid": "Unpaid",
+        "paidOfTotal": "Paid {paid} of {total} EGP",
+        "currency": "EGP",
+        "payRemaining": "Collect Remaining",
+        "emptyTitle": "No patients in today's queue",
+        "emptySubtitle": "No patients registered in the queue yet. You can book a new appointment.",
+        "errorTitle": "Failed to load queue",
+        "errorMessage": "An error occurred while fetching queue data. Please try again.",
+        "retry": "Retry",
+        "pendingCheckout": "Pending Checkout (Exam Finished)",
+        "finishExam": "Finish Exam",
+        "checkout": "Complete Visit",
+        "checkoutAndSettle": "Collect & Complete",
+        "checkoutModalTitle": "Settle Payment & Complete Visit",
+        "checkoutModalDesc": "Collect remaining balance and finalize patient visit",
+        "selectPaymentMethod": "Payment Method",
+        "cash": "Cash",
+        "card": "Credit/Debit Card",
+        "wallet": "E-Wallet",
+        "confirmAndCheckout": "Confirm & Complete",
+        "close": "Cancel"
+      }
+    }
+  },
+  "Closing": {
+    "title": "Daily Closing",
+    "subtitle": "Review today transactions and verify actual cash before closing the register",
+    "paymentCount": "Payment Count",
+    "paidInCash": "Paid in Cash",
+    "approvedExpenses": "Approved Expenses",
+    "pendingExpenses": "Pending Expenses",
+    "previewTitle": "Closing Preview",
+    "totalCash": "Total Cash Collected",
+    "totalExpenses": "Total Approved Expenses",
+    "expectedCash": "Expected Cash in Drawer",
+    "pendingWarning": "There are pending expenses ({amount} EGP) not included in closing. Request manager approval before closing.",
+    "formTitle": "Close Register",
+    "actualCash": "Actual Cash in Drawer *",
+    "diffMatched": "0.00 EGP · Matched ✓",
+    "diffSurplus": "+ {amount} EGP · Surplus in Drawer",
+    "diffDeficit": "- {amount} EGP · Deficit in Drawer",
+    "diffLabel": "Difference from Expected",
+    "notes": "Notes (Optional)",
+    "notesPlaceholder": "Any notes on this closing...",
+    "submitBtn": "Close Register",
+    "submitting": "Closing Register...",
+    "alreadyClosed": "Register has been successfully closed for today ✓",
+    "closedAt": "Closed at {time} by {name}",
+    "currency": "EGP"
+  },
+  "Payments": {
+    "title": "Daily Payments & Collections Ledger",
+    "subtitle": "Details of collected amounts, deposits, and remaining balances per patient",
+    "dailyCollection": "Today Total Collection",
+    "depositAndPartial": "Deposits & Partial Payments",
+    "remainingToCollect": "Remaining to Collect",
+    "all": "All",
+    "paid": "Paid",
+    "deposit": "Deposit / Partial",
+    "remaining": "Remaining",
+    "searchPlaceholder": "Search by patient name or phone...",
+    "export": "Export",
+    "refresh": "Refresh",
+    "paidInReceipt": "Paid in this Receipt",
+    "totalCheckup": "Total Fee",
+    "remainingSettlement": "Remaining Balance Payment",
+    "depositReceipt": "Booking Deposit Receipt",
+    "cash": "Cash",
+    "card": "Credit Card",
+    "wallet": "E-Wallet",
+    "recorded": "Recorded",
+    "fullPaymentRemaining": "Full payment of remaining balance",
+    "partialDeposit": "First installment / deposit payment",
+    "operationTime": "Operation Time",
+    "collector": "Collector",
+    "printReceipt": "Print Receipt",
+    "payRemainingBtn": "Collect Remaining",
+    "currency": "EGP"
+  },
+  "Expenses": {
+    "title": "Expenses Management",
+    "subtitle": "Record clinic purchases, track monthly budget allowance, and review expense approvals",
+    "newExpenseBtn": "Record New Expense",
+    "budgetTitle": "Monthly Reception Expense Threshold",
+    "budgetSubtitle": "Expenses below this limit are auto-approved without admin approval. Excess amounts require approval.",
+    "autoApprovedAvailable": "Auto-Approval Available",
+    "budgetExceeded": "Monthly Limit Exceeded",
+    "usagePercentage": "Usage Rate",
+    "budgetMonth": "Budget Month",
+    "monthlyBudget": "Monthly Allowance",
+    "approvedSpent": "Total Approved Spent",
+    "remainingBudget": "Remaining Budget Available",
+    "pendingApprovals": "Pending Approvals",
+    "editLimit": "Edit Monthly Limit",
+    "all": "All",
+    "approved": "Approved",
+    "pending": "Pending Approval",
+    "rejected": "Rejected",
+    "allCategories": "All Categories",
+    "searchPlaceholder": "Search expense description, recorder, or category...",
+    "currentMonth": "Current Month",
+    "viewAll": "View All",
+    "currency": "EGP",
+    "autoApprovedBadge": "Auto-Approved",
+    "approve": "Approve",
+    "reject": "Reject",
+    "emptyTitle": "No expenses match the current filter",
+    "emptySubtitle": "No recorded expenses found for these criteria. You can record a new expense anytime."
+  },
+  "Patients": {
+    "title": "Patients Registry",
+    "subtitle": "Manage, search, and view patient records in the clinic",
+    "searchPlaceholder": "Search by patient name, phone, or national ID...",
+    "newPatient": "Add New Patient",
+    "name": "Name",
+    "phone": "Phone",
+    "gender": "Gender",
+    "age": "Age",
+    "actions": "Actions",
+    "emptyTitle": "No registered patients",
+    "emptySubtitle": "You can add a new patient now by clicking the button above."
+  }
+}
