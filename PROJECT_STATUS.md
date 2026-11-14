@@ -8,28 +8,29 @@
 
 ## 1. Executive Summary
 
-Phase 4 (Printing Engine) has been fully engineered and validated against all physical measurement, overflow, and print requirements:
+Phase 4 (Printing Engine) and the Complete Legacy Purge have been fully completed and validated:
+- **Clean Codebase & Pure Roshteh Architecture:**
+  - Purged all 14 legacy Express API proxy route handlers under `src/app/api/`.
+  - Purged old NextAuth login routes under `src/app/auth/`.
+  - Purged old multi-role slots and pages under `src/app/dashboard/` (`@admin`, `@doctor`, `@receptionist`).
+  - Purged 14 legacy feature folders (`appointments`, `auth`, `chat`, `clinical-search`, `closing`, `drugs`, `examination`, `expenses`, `home`, `patient`, `payments`, `pricing`, `reports`, `users`).
+  - Purged obsolete desktop/server assets, old anatomy images, and legacy icons.
+  - Active routes verified: `/` (Home), `/prescriptions` (Archive), `/prescriptions/new` (Editor), `/medicines` (Catalog), `/templates` (Branding), `/settings` (Backup & Restore).
 - **Physical Paper Dimensions (`PRT-001`, `PRT-002`):**
   - High-precision CSS `@page` layout for **A5** (148mm × 210mm) and **A4** (210mm × 297mm).
   - Clean `@media print` rules removing browser headers/footers, background noise, and margins.
 - **Dynamic Content Overflow & Multi-Page Pagination (`PRT-003`, `PRT-004`):**
-  - Built `prescription-pagination.ts` engine:
-    - Calculates item physical weights based on instruction length and timing notes.
-    - Accurately splits medication lists into page chunks (`paginatePrescriptionItems`).
-    - Ensures Page 1 accommodates clinic header, patient bar, and footer (~4.5 weight budget on A5).
-    - Continuation pages receive a clean, compact header and dedicate full space to overflow medications.
-    - Individual drug rows marked with `break-inside: avoid` (`page-break-inside: avoid`) preventing lines from being sliced across page breaks.
+  - Built `prescription-pagination.ts` engine with item physical weights based on instruction length and timing notes.
+  - Accurately splits medication lists into page chunks (`paginatePrescriptionItems`).
+  - Individual drug rows marked with `break-inside: avoid` preventing sliced lines across page breaks.
 - **Front & Back Printing (`PRT-003`):**
   - Front pages dedicated to prescribed medications, dosage directions, and signature.
   - Optional Back page (`ظهر الروشتة`) rendering post-consultation medical compliance instructions, emergency warning signs, and follow-up consultation dates.
-- **Bilingual & RTL Accuracy (`PRT-005`, `PRT-006`):**
-  - Primary document rendered in Arabic RTL with Cairo and Readex Pro typography.
-  - English trade names, strengths, and active ingredients set to clean LTR spans.
 - **PDF Export Support (`PRT-007`):**
-  - Dedicated "حفظ كـ PDF" (Export to PDF) action in `PrescriptionPrintModal`.
-  - Dynamically configures sanitized Arabic document titles (`روشتة_[اسم المريض]_[التاريخ].pdf`).
+  - Dedicated "حفظ كـ PDF" action in `PrescriptionPrintModal` with clean Arabic document titles.
 - **Automated Verification:**
-  - 21 unit and integration tests passing (`pnpm test`) covering normalization, barcode priority, CSV/JSON pipeline, multi-medicine editor, snapshot immutability, A4/A5 pagination, overflow distribution, and PDF naming.
+  - 21 unit and integration tests passing (`pnpm test`).
+  - Next.js production build (`pnpm build`) compiled 100% clean with zero errors across all routes.
   - Strict TypeScript check (`tsc --noEmit`) passes with 0 errors.
 
 ---

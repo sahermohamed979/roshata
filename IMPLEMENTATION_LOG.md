@@ -204,3 +204,35 @@
      - `PRT-007`: PDF export title sanitation.
    - Executed `pnpm test`: 21 tests passed across 9 suites in 107ms.
    - Executed `npx tsc --noEmit`: 0 errors.
+
+
+---
+
+## Log Entry 007 — Complete Purge of Legacy Routes, Files & Dependencies
+**Date:** 2026-11-14  
+**Author:** Lead Software Architect  
+
+### Scope & Removed Legacy Items:
+1. **Purged Legacy App Routes (`src/app/`):**
+   - Removed all 14 legacy Express server API proxies under `src/app/api/` (`attachments`, `auth`, `calendar`, `clinical-search`, `closing`, `doctor-status`, `doctors`, `drugs`, `expenses`, `patients`, `payments`, `queue`, `realtime`, `reports`).
+   - Removed legacy NextAuth route `src/app/auth/`.
+   - Removed legacy multi-role dashboard folder `src/app/dashboard/` (`@admin`, `@doctor`, `@receptionist`, and `pricing`).
+2. **Purged Legacy Feature Directories (`src/features/`):**
+   - Removed `appointments`, `auth`, `chat`, `clinical-search`, `closing`, `drugs`, `examination`, `expenses`, `home`, `patient`, `payments`, `pricing`, `reports`, and `users`.
+   - Cleaned `src/features/dashboard/` to retain exclusively `roshteh-home-view.tsx`.
+3. **Purged Obsolete Shared Components & Utilities:**
+   - Removed `src/auth.ts`, `src/shared/components/dashboard-layout/`, `nafs-logo.tsx`, `realtime-status-badge.tsx`, `whatsapp-icon.tsx`, and `switch-language-btn.tsx`.
+   - Removed `src/shared/providers/components/next-auth-provider.tsx` and unhooked `NextAuthProvider` from `src/shared/providers/index.tsx`.
+   - Removed `src/shared/hooks/use-clinic-realtime.ts`.
+   - Removed old anatomy images and doctor profile from `public/`.
+4. **Verification & Clean Build:**
+   - Executed `npx tsc --noEmit`: Verified 0 errors across entire workspace.
+   - Executed `pnpm test`: All 21 unit tests passed across 9 suites.
+   - Executed `next build`: 100% clean production build producing only active Roshteh routes:
+     - `/` (Home View)
+     - `/_not-found`
+     - `/medicines` (Formulary Catalog)
+     - `/prescriptions` (Archive)
+     - `/prescriptions/new` (Prescription Editor)
+     - `/settings` (Database Backup & Restore)
+     - `/templates` (Clinic Branding Customizer)
