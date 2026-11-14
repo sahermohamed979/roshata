@@ -1,36 +1,104 @@
 'use client';
 
-import React from 'react';
-import { User, Calendar, Phone, Activity, FileText, Weight } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { User, Calendar, Phone, Activity, Weight, AlertCircle } from 'lucide-react';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { usePrescriptionStore } from '@/stores/prescription.store';
+import {
+  patientInfoFormSchema,
+  type PatientInfoFormValues,
+} from '../schemas/patient-info.schema';
 import { cn } from '@/lib/utils';
 
 export function PatientInfoForm() {
   // State from Zustand store
-  const { patient, diagnosis, notes, setPatientInfo, setDiagnosis, setNotes } = usePrescriptionStore();
+  const { patient, diagnosis, setPatientInfo, setDiagnosis } = usePrescriptionStore();
 
-  // Functions
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPatientInfo({ name: e.target.value });
-  };
+  // Form & validation setup with react-hook-form and Zod
+  const {
+    register,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<PatientInfoFormValues>({
+    resolver: zodResolver(patientInfoFormSchema),
+    mode: 'onChange',
+    defaultValues: {
+      name: patient.name || '',
+      age: patient.age ? String(patient.age) : '',
+      gender: patient.gender === 'FEMALE' ? 'FEMALE' : 'MALE',
+      phone: patient.phone || '',
+      weight: patient.weight ? String(patient.weight) : '',
+      diagnosis: diagnosis || '',
+    },
+  });
 
-  const handleAgeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPatientInfo({ age: e.target.value });
-  };
+  // Watch values for real-time synchronization to prescription store
+  const watchedValues = watch();
 
+  // Sync external store changes (e.g. draft resume or reset) into form
+  useEffect(() => {
+    reset({
+      name: patient.name || '',
+      age: patient.age ? String(patient.age) : '',
+      gender: patient.gender === 'FEMALE' ? 'FEMALE' : 'MALE',
+      phone: patient.phone || '',
+      weight: patient.weight ? String(patient.weight) : '',
+      diagnosis: diagnosis || '',
+    });
+  }, [patient.name, patient.age, patient.gender, patient.phone, patient.weight, diagnosis, reset]);
+
+  // Handle immediate field changes and sync to store
   const handleGenderChange = (gender: 'MALE' | 'FEMALE') => {
+    setValue('gender', gender, { shouldValidate: true });
     setPatientInfo({ gender });
   };
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPatientInfo({ phone: e.target.value });
-  };
+  /**
+   * Sanitizes input in real-time to strictly reject invalid character types:
+   * - Name: Disallow all digits (Arabic & Western)
+   * - Age: Disallow all non-digits
+   * - Phone: Disallow all non-digits (except leading +)
+   * - Weight: Disallow all non-numbers/decimals
+   */
+  const handleSanitizedChange = (
+    fieldName: keyof PatientInfoFormValues,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    let raw = e.target.value;
+    let sanitized = raw;
 
-  const handleWeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPatientInfo({ weight: e.target.value });
+    if (fieldName === 'name') {
+      // Remove any digits (both 0-9 and Eastern Arabic numerals ٠-٩)
+      sanitized = raw.replace(/[\d\u0660-\u0669]/g, '');
+    } else if (fieldName === 'age') {
+      // Remove any non-digits
+      sanitized = raw.replace(/[^\d]/g, '').slice(0, 3);
+    } else if (fieldName === 'phone') {
+      // Allow only digits and optional leading +
+      sanitized = raw.replace(/[^\d+]/g, '').slice(0, 16);
+    } else if (fieldName === 'weight') {
+      // Allow only digits and at most one decimal point
+      sanitized = raw.replace(/[^\d.]/g, '').replace(/(\..*?)\..*/g, '$1').slice(0, 5);
+    }
+
+    // Force update DOM input value immediately if sanitized
+    if (sanitized !== raw) {
+      e.target.value = sanitized;
+    }
+
+    setValue(fieldName, sanitized as string, { shouldValidate: true });
+
+    if (fieldName === 'diagnosis') {
+      setDiagnosis(sanitized);
+    } else {
+      setPatientInfo({ [fieldName]: sanitized });
+    }
   };
 
   return (
@@ -41,42 +109,62 @@ export function PatientInfoForm() {
             <User className="w-4 h-4 text-[#0B7B5E]" />
             <span>بيانات المريض والتشخيص</span>
           </div>
-          <span className="text-[11px] font-semibold text-slate-400">حفظ تلقائي وفوري</span>
+          <span className="text-[11px] font-semibold text-slate-400">فحص دقيق وحفظ تلقائي فوري</span>
         </div>
 
         {/* First Row: Name, Age, Gender */}
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-          {/* Patient Name */}
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
+          {/* Patient Name (Letters only - no numbers allowed) */}
           <div className="sm:col-span-6 space-y-1.5">
             <Label htmlFor="patient-name" className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-              <span>اسم المريض</span>
+              <span>اسم المريض (حروف فقط بدون أرقام)</span>
               <span className="text-rose-500">*</span>
             </Label>
             <div className="relative">
               <Input
                 id="patient-name"
-                value={patient.name}
-                onChange={handleNameChange}
+                {...register('name')}
+                onChange={(e) => handleSanitizedChange('name', e)}
                 placeholder="مثال: أحمد محمود علي"
-                className="bg-slate-50/70 border-slate-200 focus:bg-white text-sm font-semibold h-10 px-3.5"
+                className={cn(
+                  'bg-slate-50/70 border-slate-200 focus:bg-white text-sm font-semibold h-10 px-3.5',
+                  errors.name && 'border-rose-400 focus-visible:ring-rose-500/20 bg-rose-50/30'
+                )}
                 autoComplete="off"
               />
             </div>
+            {errors.name && (
+              <p className="text-[11px] font-bold text-rose-600 flex items-center gap-1 mt-1 animate-in fade-in-50">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{errors.name.message}</span>
+              </p>
+            )}
           </div>
 
-          {/* Age */}
+          {/* Age (Numbers only - 1 to 125) */}
           <div className="sm:col-span-3 space-y-1.5">
             <Label htmlFor="patient-age" className="text-xs font-bold text-slate-700 flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5 text-slate-400" />
-              <span>العمر</span>
+              <span>العمر (أرقام فقط)</span>
             </Label>
             <Input
               id="patient-age"
-              value={patient.age || ''}
-              onChange={handleAgeChange}
-              placeholder="مثال: 32 سنة"
-              className="bg-slate-50/70 border-slate-200 focus:bg-white text-sm h-10"
+              type="text"
+              inputMode="numeric"
+              {...register('age')}
+              onChange={(e) => handleSanitizedChange('age', e)}
+              placeholder="مثال: 32"
+              className={cn(
+                'bg-slate-50/70 border-slate-200 focus:bg-white text-sm h-10 font-medium',
+                errors.age && 'border-rose-400 focus-visible:ring-rose-500/20 bg-rose-50/30'
+              )}
             />
+            {errors.age && (
+              <p className="text-[11px] font-bold text-rose-600 flex items-center gap-1 mt-1 animate-in fade-in-50">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{errors.age.message}</span>
+              </p>
+            )}
           </div>
 
           {/* Gender */}
@@ -87,8 +175,8 @@ export function PatientInfoForm() {
                 type="button"
                 onClick={() => handleGenderChange('MALE')}
                 className={cn(
-                  'rounded-xl text-xs font-black transition-all flex items-center justify-center',
-                  patient.gender === 'MALE'
+                  'rounded-xl text-xs font-black transition-all flex items-center justify-center cursor-pointer',
+                  watchedValues.gender === 'MALE'
                     ? 'bg-white text-[#0B7B5E] shadow-2xs'
                     : 'text-slate-500 hover:text-slate-800'
                 )}
@@ -99,8 +187,8 @@ export function PatientInfoForm() {
                 type="button"
                 onClick={() => handleGenderChange('FEMALE')}
                 className={cn(
-                  'rounded-xl text-xs font-black transition-all flex items-center justify-center',
-                  patient.gender === 'FEMALE'
+                  'rounded-xl text-xs font-black transition-all flex items-center justify-center cursor-pointer',
+                  watchedValues.gender === 'FEMALE'
                     ? 'bg-white text-rose-600 shadow-2xs'
                     : 'text-slate-500 hover:text-slate-800'
                 )}
@@ -112,36 +200,58 @@ export function PatientInfoForm() {
         </div>
 
         {/* Second Row: Phone, Weight, Diagnosis */}
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-          {/* Phone */}
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
+          {/* Phone (Numbers only - 11 digits starting with 01) */}
           <div className="sm:col-span-4 space-y-1.5">
             <Label htmlFor="patient-phone" className="text-xs font-bold text-slate-700 flex items-center gap-1">
               <Phone className="w-3.5 h-3.5 text-slate-400" />
-              <span>رقم الهاتف (اختياري)</span>
+              <span>رقم الهاتف (أرقام فقط)</span>
             </Label>
             <Input
               id="patient-phone"
-              value={patient.phone || ''}
-              onChange={handlePhoneChange}
+              type="tel"
+              inputMode="tel"
+              {...register('phone')}
+              onChange={(e) => handleSanitizedChange('phone', e)}
               placeholder="01XXXXXXXXX"
-              className="bg-slate-50/70 border-slate-200 focus:bg-white text-sm h-10"
+              className={cn(
+                'bg-slate-50/70 border-slate-200 focus:bg-white text-sm h-10',
+                errors.phone && 'border-rose-400 focus-visible:ring-rose-500/20 bg-rose-50/30'
+              )}
               dir="ltr"
             />
+            {errors.phone && (
+              <p className="text-[11px] font-bold text-rose-600 flex items-center gap-1 mt-1 animate-in fade-in-50">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{errors.phone.message}</span>
+              </p>
+            )}
           </div>
 
-          {/* Weight */}
+          {/* Weight (Numbers only) */}
           <div className="sm:col-span-2 space-y-1.5">
             <Label htmlFor="patient-weight" className="text-xs font-bold text-slate-700 flex items-center gap-1">
               <Weight className="w-3.5 h-3.5 text-slate-400" />
-              <span>الوزن (كجم)</span>
+              <span>الوزن (كجم - أرقام)</span>
             </Label>
             <Input
               id="patient-weight"
-              value={patient.weight || ''}
-              onChange={handleWeightChange}
+              type="text"
+              inputMode="decimal"
+              {...register('weight')}
+              onChange={(e) => handleSanitizedChange('weight', e)}
               placeholder="مثال: 70"
-              className="bg-slate-50/70 border-slate-200 focus:bg-white text-sm h-10"
+              className={cn(
+                'bg-slate-50/70 border-slate-200 focus:bg-white text-sm h-10',
+                errors.weight && 'border-rose-400 focus-visible:ring-rose-500/20 bg-rose-50/30'
+              )}
             />
+            {errors.weight && (
+              <p className="text-[11px] font-bold text-rose-600 flex items-center gap-1 mt-1 animate-in fade-in-50">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{errors.weight.message}</span>
+              </p>
+            )}
           </div>
 
           {/* Diagnosis */}
@@ -152,8 +262,8 @@ export function PatientInfoForm() {
             </Label>
             <Input
               id="rx-diagnosis"
-              value={diagnosis}
-              onChange={(e) => setDiagnosis(e.target.value)}
+              {...register('diagnosis')}
+              onChange={(e) => handleSanitizedChange('diagnosis', e)}
               placeholder="مثال: التهاب حاد في الجيوب الأنفية / Acute Sinusitis"
               className="bg-slate-50/70 border-slate-200 focus:bg-white text-sm h-10"
             />

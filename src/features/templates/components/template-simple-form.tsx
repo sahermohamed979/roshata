@@ -643,29 +643,9 @@ export function TemplateSimpleForm() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold text-slate-700">مقاس الورق الافتراضي</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => updateField('paperSize', 'A5')}
-                      className={`p-2.5 rounded-xl border text-center transition-all ${
-                        activeTemplate.paperSize === 'A5'
-                          ? 'border-[#0B7B5E] bg-[#E3F5EE]/40 text-[#074C3A] font-black'
-                          : 'border-slate-200 bg-white text-slate-700 font-bold'
-                      } text-xs`}
-                    >
-                      مقاس A5 (الشائع)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => updateField('paperSize', 'A4')}
-                      className={`p-2.5 rounded-xl border text-center transition-all ${
-                        activeTemplate.paperSize === 'A4'
-                          ? 'border-[#0B7B5E] bg-[#E3F5EE]/40 text-[#074C3A] font-black'
-                          : 'border-slate-200 bg-white text-slate-700 font-bold'
-                      } text-xs`}
-                    >
-                      مقاس A4 (الكبير)
-                    </button>
+                  <div className="p-2.5 rounded-xl border border-[#0B7B5E] bg-[#E3F5EE]/40 text-[#074C3A] font-black text-xs text-center flex items-center justify-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#0B7B5E]"></span>
+                    <span>مقاس A5 القياسي المعتمد للروشتة (148 × 210 مم)</span>
                   </div>
                 </div>
 

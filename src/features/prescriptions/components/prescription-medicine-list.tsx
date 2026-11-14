@@ -227,14 +227,37 @@ function PrescriptionItemRow({ item, index, totalItems }: PrescriptionItemRowPro
           </div>
         </div>
 
-        {/* Clinical Instructions / Notes */}
-        <div className="pt-2">
+        {/* Medicine Specific Instructions */}
+        <div className="pt-2.5 mt-1 border-t border-slate-100 space-y-1">
+          <div className="flex items-center justify-between">
+            <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+              <span>إرشادات خاصة بهذا الدواء (اختياري):</span>
+            </label>
+            {item.instructions && (
+              <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                تظهر تحت الدواء في الروشتة المطبوعة
+              </span>
+            )}
+          </div>
           <Input
             value={item.instructions || ''}
             onChange={(e) => updateItem(item.id, { instructions: e.target.value })}
-            placeholder="تعليمات إضافية للمريض (مثال: يُشرب مع كوب ماء كبير، بعد الأكل بساعة)..."
-            className="h-8 text-xs bg-slate-50/50 border-dashed border-slate-200 focus:bg-white placeholder:text-slate-400"
+            placeholder="مثال: بعد الأكل بنصف ساعة، يُشرب مع كوب ماء كبير، قبل النوم..."
+            className="h-8 text-xs bg-slate-50/70 border-dashed border-slate-300 focus:bg-white placeholder:text-slate-400 font-medium"
           />
+          {/* Quick chips for medicine instructions */}
+          <div className="flex items-center gap-1 overflow-x-auto py-0.5 no-scrollbar">
+            {['بعد الأكل بنصف ساعة', 'قبل الأكل بنصف ساعة', 'مع كوب ماء وفير', 'قبل النوم', 'عند اللزوم'].map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => updateItem(item.id, { instructions: chip })}
+                className="text-[10px] bg-slate-100 hover:bg-[#E3F5EE] hover:text-[#074C3A] text-slate-600 px-2 py-0.5 rounded-md whitespace-nowrap transition-colors"
+              >
+                + {chip}
+              </button>
+            ))}
+          </div>
         </div>
       </CardContent>
     </Card>

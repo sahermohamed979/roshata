@@ -30,8 +30,8 @@ function paginatePrescriptionItems(items, paperSize = 'A5') {
   }
 
   const isA5 = paperSize === 'A5';
-  const page1Capacity = isA5 ? 4.5 : 8.5;
-  const continuationCapacity = isA5 ? 6.5 : 12.0;
+  const page1Capacity = isA5 ? 5.5 : 8.5;
+  const continuationCapacity = isA5 ? 7.5 : 12.0;
 
   const pagesItems = [];
   let currentPageItems = [];
@@ -69,19 +69,20 @@ function paginatePrescriptionItems(items, paperSize = 'A5') {
 }
 
 describe('Phase 4 — Physical Dimensions & Pagination (PRT-001, PRT-002)', () => {
-  test('A5 paper size allows ~4 items on Page 1 before overflowing', () => {
+  test('A5 paper size allows 5 standard items on Page 1 before overflowing', () => {
     const items = [
       { id: '1', nameSnapshotEn: 'Augmentin 1g', dosage: '1 tablet', displayOrder: 1 },
       { id: '2', nameSnapshotEn: 'Panadol Advance', dosage: '2 tablets', displayOrder: 2 },
       { id: '3', nameSnapshotEn: 'Cataflam 50', dosage: '1 tablet', displayOrder: 3 },
       { id: '4', nameSnapshotEn: 'Zyrtec 10mg', dosage: '1 tablet', displayOrder: 4 },
+      { id: '5', nameSnapshotEn: 'Amoclan 1g', dosage: '1 tablet', displayOrder: 5 },
     ];
 
     const pages = paginatePrescriptionItems(items, 'A5');
     assert.equal(pages.length, 1);
     assert.equal(pages[0].pageNumber, 1);
     assert.equal(pages[0].totalPages, 1);
-    assert.equal(pages[0].items.length, 4);
+    assert.equal(pages[0].items.length, 5);
   });
 
   test('A4 paper size accommodates up to 8 standard items on Page 1', () => {

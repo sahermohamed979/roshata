@@ -59,27 +59,55 @@ export function MedicineSearchCombobox() {
     inputRef.current?.focus();
   };
 
+  const handleDirectAddCustom = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const isEnglish = /^[A-Za-z0-9\s.,+/%-]+$/.test(trimmed);
+    const customMed: UnifiedMedicineResult = {
+      id: `custom_${Date.now()}`,
+      nameAr: isEnglish ? trimmed : trimmed,
+      nameEn: isEnglish ? trimmed : trimmed,
+      dosageForm: 'أقراص (Tablets)',
+      isCustom: true,
+      defaultDosage: 'قرص واحد',
+      defaultFrequency: 'كل 8 ساعات (3 مرات يومياً)',
+      defaultDuration: 'لمدة 5 أيام',
+    };
+    addMedicine(customMed);
+    toast.success(`تمت إضافة ${trimmed} مباشرة إلى الروشتة`);
+    clearSearch();
+    setIsOpen(false);
+    inputRef.current?.focus();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isOpen || results.length === 0) {
-      if (e.key === 'Enter' && searchTerm.trim().length > 0 && results.length === 0) {
+    if (e.key === 'ArrowDown') {
+      if (results.length > 0) {
         e.preventDefault();
-        handleOpenCustomDialog(searchTerm);
+        setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : 0));
       }
       return;
     }
 
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : 0));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : results.length - 1));
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (results[selectedIndex]) {
-        handleSelectMedicine(results[selectedIndex]);
+    if (e.key === 'ArrowUp') {
+      if (results.length > 0) {
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : results.length - 1));
       }
-    } else if (e.key === 'Escape') {
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (results.length > 0 && results[selectedIndex]) {
+        handleSelectMedicine(results[selectedIndex]);
+      } else if (searchTerm.trim().length > 0) {
+        handleDirectAddCustom(searchTerm);
+      }
+      return;
+    }
+
+    if (e.key === 'Escape') {
       setIsOpen(false);
     }
   };
@@ -247,43 +275,53 @@ export function MedicineSearchCombobox() {
               );
             })}
 
-            {/* Empty State / Not Found */}
+            {/* Empty State / Quick Instant Add */}
             {!isSearching && results.length === 0 && (
-              <div className="p-6 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
-                  <ShieldAlert className="w-6 h-6" />
+              <div className="p-5 text-center space-y-3">
+                <div className="w-10 h-10 rounded-full bg-[#E3F5EE] text-[#0B7B5E] flex items-center justify-center mx-auto">
+                  <Pill className="w-5 h-5" />
                 </div>
                 <div>
                   <p className="text-sm font-black text-slate-800">
-                    لم يتم العثور على دواء باسم &quot;{searchTerm}&quot;
+                    دواء جديد: &quot;{searchTerm}&quot;
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    يمكنك إضافته فوراً إلى قائمتك المخصصة وسيظل متاحاً في كل الروشتات القادمة.
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    اضغط Enter أو الزر أدناه لإضافته فوراً على طول إلى الروشتة
                   </p>
                 </div>
-                <Button
-                  type="button"
-                  onClick={() => handleOpenCustomDialog(searchTerm)}
-                  className="bg-[#0B7B5E] hover:bg-[#074C3A] text-white font-bold text-xs rounded-xl shadow-xs"
-                >
-                  <Plus className="w-4 h-4 ml-1.5" />
-                  إضافة &quot;{searchTerm}&quot; كدواء مخصص
-                </Button>
+                <div className="flex items-center justify-center gap-2 flex-wrap">
+                  <Button
+                    type="button"
+                    onClick={() => handleDirectAddCustom(searchTerm)}
+                    className="bg-[#0B7B5E] hover:bg-[#074C3A] text-white font-black text-xs rounded-xl shadow-xs gap-1.5 h-9 px-4 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>إضافة &quot;{searchTerm}&quot; فوراً للروشتة (Enter)</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleOpenCustomDialog(searchTerm)}
+                    className="border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-xs rounded-xl h-9 px-3 cursor-pointer"
+                  >
+                    <span>تخصيص بيانات إضافية</span>
+                  </Button>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Quick Add Footer when results are shown */}
+          {/* Quick Direct Add Footer */}
           {results.length > 0 && (
             <div className="p-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-slate-500 font-medium">غير موجود في النتائج؟</span>
+              <span className="text-slate-500 font-medium">غير موجود بالاسم الدقيق؟</span>
               <button
                 type="button"
-                onClick={() => handleOpenCustomDialog(searchTerm)}
-                className="text-[#0B7B5E] hover:text-[#074C3A] font-black flex items-center gap-1 hover:underline"
+                onClick={() => handleDirectAddCustom(searchTerm)}
+                className="text-[#0B7B5E] hover:text-[#074C3A] font-black flex items-center gap-1 hover:underline cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>إضافة دواء جديد بالاسم &quot;{searchTerm}&quot;</span>
+                <span>إضافة &quot;{searchTerm}&quot; كدواء مخصص فوراً</span>
               </button>
             </div>
           )}

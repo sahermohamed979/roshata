@@ -16,6 +16,7 @@ interface PrescriptionState {
   patient: PatientInfo;
   diagnosis: string;
   notes: string;
+  instructionsList: string[];
   paperSize: 'A4' | 'A5' | 'CUSTOM';
   status: PrescriptionStatus;
   items: PrescriptionMedicineItem[];
@@ -27,6 +28,9 @@ interface PrescriptionState {
   setPatientInfo: (patient: Partial<PatientInfo>) => void;
   setDiagnosis: (diagnosis: string) => void;
   setNotes: (notes: string) => void;
+  addInstruction: (text: string) => void;
+  removeInstruction: (index: number) => void;
+  clearInstructions: () => void;
   setTemplateId: (templateId: string) => void;
   setPaperSize: (paperSize: 'A4' | 'A5' | 'CUSTOM') => void;
   setStatus: (status: PrescriptionStatus) => void;
@@ -60,6 +64,7 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
   patient: initialPatient,
   diagnosis: '',
   notes: '',
+  instructionsList: [],
   paperSize: 'A5',
   status: 'draft',
   items: [],
@@ -76,7 +81,40 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
 
   setDiagnosis: (diagnosis) => set({ diagnosis, hasUnsavedChanges: true }),
 
-  setNotes: (notes) => set({ notes, hasUnsavedChanges: true }),
+  setNotes: (notes) =>
+    set({
+      notes,
+      instructionsList: notes ? notes.split('\n').map((s) => s.trim()).filter(Boolean) : [],
+      hasUnsavedChanges: true,
+    }),
+
+  addInstruction: (text) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    set((state) => {
+      const nextList = [...state.instructionsList, trimmed];
+      return {
+        instructionsList: nextList,
+        notes: nextList.join('\n'),
+        hasUnsavedChanges: true,
+      };
+    });
+  },
+
+  removeInstruction: (index) => {
+    set((state) => {
+      const nextList = state.instructionsList.filter((_, idx) => idx !== index);
+      return {
+        instructionsList: nextList,
+        notes: nextList.join('\n'),
+        hasUnsavedChanges: true,
+      };
+    });
+  },
+
+  clearInstructions: () => {
+    set({ instructionsList: [], notes: '', hasUnsavedChanges: true });
+  },
 
   setTemplateId: (templateId) => set({ templateId, hasUnsavedChanges: true }),
 
@@ -97,7 +135,7 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
       dosage: defaults.dosage || med.defaultDosage || 'قرص واحد',
       frequency: defaults.frequency || med.defaultFrequency || 'كل 8 ساعات (3 مرات يومياً)',
       duration: defaults.duration || med.defaultDuration || 'لمدة 5 أيام',
-      timing: defaults.timing || 'بعد الأكل',
+      timing: defaults.timing || '',
       route: defaults.route || med.routeOfAdministration || 'فموي',
       instructions: defaults.instructions || '',
       displayOrder: get().items.length + 1,
@@ -166,6 +204,7 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
         patient: s.patient,
         diagnosis: s.diagnosis,
         notes: s.notes,
+        instructionsList: s.instructionsList,
         items: s.items,
         paperSize: s.paperSize,
         status: s.status,
@@ -186,6 +225,7 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
       patient: initialPatient,
       diagnosis: '',
       notes: '',
+      instructionsList: [],
       items: [],
       status: 'draft',
       hasUnsavedChanges: false,
@@ -200,9 +240,18 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
       patient: rx.patient,
       diagnosis: rx.diagnosis || '',
       notes: rx.notes || '',
+      instructionsList:
+        rx.instructionsList && rx.instructionsList.length > 0
+          ? rx.instructionsList
+          : rx.notes
+          ? rx.notes.split('\n').map((s) => s.trim()).filter(Boolean)
+          : [],
       paperSize: rx.paperSize,
       status: rx.status,
-      items: rx.items,
+      items: (rx.items || []).map((it) => ({
+        ...it,
+        timing: it.timing === 'بعد الأكل' ? '' : it.timing || '',
+      })),
       hasUnsavedChanges: false,
       lastSavedAt: new Date(rx.updatedAt).toLocaleTimeString('ar-EG'),
     }),
@@ -216,6 +265,7 @@ export const usePrescriptionStore = create<PrescriptionState>((set, get) => ({
       patient: s.patient,
       diagnosis: s.diagnosis,
       notes: s.notes,
+      instructionsList: s.instructionsList,
       items: s.items,
       paperSize: s.paperSize,
       status: s.status,

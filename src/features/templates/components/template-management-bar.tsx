@@ -261,32 +261,12 @@ export function TemplateManagementBar() {
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-slate-700">مقاس الورق الافتراضي</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setNewTemplateSize('A5')}
-                    className={`p-3 rounded-xl border text-right transition-all ${
-                      newTemplateSize === 'A5'
-                        ? 'border-[#0B7B5E] bg-[#E3F5EE]/40 text-[#074C3A]'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="font-black text-xs">مقاس A5 (المعياري)</div>
-                    <div className="text-[10px] text-slate-500">148mm × 210mm (الشائع)</div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setNewTemplateSize('A4')}
-                    className={`p-3 rounded-xl border text-right transition-all ${
-                      newTemplateSize === 'A4'
-                        ? 'border-[#0B7B5E] bg-[#E3F5EE]/40 text-[#074C3A]'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="font-black text-xs">مقاس A4 (الكبير)</div>
-                    <div className="text-[10px] text-slate-500">210mm × 297mm (تقرير كامل)</div>
-                  </button>
+                <div className="p-3 rounded-xl border border-[#0B7B5E] bg-[#E3F5EE]/40 text-[#074C3A] flex items-center justify-between">
+                  <div>
+                    <div className="font-black text-xs">مقاس A5 (المعياري المعتمد للروشتة)</div>
+                    <div className="text-[10px] text-slate-500">148mm × 210mm (المقاس الطبي القياسي)</div>
+                  </div>
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#0B7B5E]"></span>
                 </div>
               </div>
             </div>

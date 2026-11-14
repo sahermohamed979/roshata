@@ -1,18 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   PlusCircle,
   FileText,
   Pill,
   Printer,
   Edit,
-  LayoutTemplate,
-  History,
   Sparkles,
-  Wifi,
-  WifiOff,
   Stethoscope,
   ChevronLeft,
   Search,
@@ -21,38 +18,32 @@ import {
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Badge } from '@/shared/components/ui/badge';
-import { PrescriptionRepository } from '@/features/prescriptions/repositories/prescription.repository';
-import { useMedicineStore } from '@/stores/medicine.store';
 import { usePrescriptionStore } from '@/stores/prescription.store';
 import { PrescriptionPrintModal } from '@/features/prescriptions/components/prescription-print-modal';
+import { useDashboardData } from '../hooks/use-dashboard-data';
 import type { Prescription } from '@/types/prescription.types';
-import { useRouter } from 'next/navigation';
 
 export function RoshtehHomeView() {
+  // Navigation
   const router = useRouter();
-  const { totalGlobalCount, totalCustomCount, refreshCounts } = useMedicineStore();
+
+  // Stores
   const { loadPrescription } = usePrescriptionStore();
 
-  const [recentPrescriptions, setRecentPrescriptions] = useState<Prescription[]>([]);
-  const [totalRxCount, setTotalRxCount] = useState(0);
+  // State
   const [selectedForPrint, setSelectedForPrint] = useState<Prescription | null>(null);
 
-  useEffect(() => {
-    refreshCounts();
-    loadDashboardData();
-  }, []);
+  // Queries (TanStack React Query - eliminates useEffect)
+  const { data: dashboardData } = useDashboardData();
 
-  const loadDashboardData = async () => {
-    try {
-      const list = await PrescriptionRepository.listRecent(5);
-      const count = await PrescriptionRepository.count();
-      setRecentPrescriptions(list);
-      setTotalRxCount(count);
-    } catch (err) {
-      console.error('Error loading dashboard data:', err);
-    }
-  };
+  // Derived data
+  const recentPrescriptions = dashboardData?.recentPrescriptions ?? [];
+  const totalRxCount = dashboardData?.totalRxCount ?? 0;
+  const totalMedicinesCount = dashboardData
+    ? dashboardData.medicineCounts.global + dashboardData.medicineCounts.custom
+    : 0;
 
+  // Functions
   const handleEdit = (rx: Prescription) => {
     loadPrescription(rx);
     router.push('/prescriptions/new');
@@ -95,7 +86,7 @@ export function RoshtehHomeView() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-sm font-bold border border-white/20 transition-all"
             >
               <Search className="w-4 h-4" />
-              <span>تصفح دليل الأدوية ({totalGlobalCount + totalCustomCount})</span>
+              <span>تصفح دليل الأدوية ({totalMedicinesCount})</span>
             </Link>
           </div>
         </div>
@@ -124,7 +115,7 @@ export function RoshtehHomeView() {
             <div>
               <span className="text-xs font-bold text-slate-500 block">الأدوية المحملة محلياً</span>
               <span className="text-2xl sm:text-3xl font-black text-slate-800 mt-1 block">
-                {totalGlobalCount + totalCustomCount}
+                {totalMedicinesCount}
               </span>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-black">

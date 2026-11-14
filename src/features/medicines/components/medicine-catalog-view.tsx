@@ -197,8 +197,8 @@ export function MedicineCatalogView() {
         {medicines.map((med) => (
           <Card
             key={med.id}
-            onClick={() => setInspectingMedicine(med)}
-            className="border border-[#D0E5DC] bg-white hover:border-[#0B7B5E]/50 hover:shadow-xs transition-all rounded-2xl group flex flex-col justify-between cursor-pointer"
+            onClick={(e) => handleAddToPrescription(med, e)}
+            className="border border-[#D0E5DC] bg-white hover:border-[#0B7B5E] hover:shadow-md transition-all rounded-2xl group flex flex-col justify-between cursor-pointer"
           >
             <CardContent className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
               <div>
@@ -224,6 +224,18 @@ export function MedicineCatalogView() {
                         دليل عام
                       </Badge>
                     )}
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setInspectingMedicine(med);
+                      }}
+                      className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                      title="عرض التفاصيل الكاملة"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </button>
 
                     {med.isCustom && (
                       <button

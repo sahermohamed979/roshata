@@ -41,6 +41,7 @@ export interface Prescription {
   patient: PatientInfo;
   diagnosis?: string;
   notes?: string;
+  instructionsList?: string[];
   items: PrescriptionMedicineItem[];
 
   paperSize: 'A4' | 'A5' | 'CUSTOM';

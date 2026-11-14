@@ -15,7 +15,7 @@ import { Button } from '@/shared/components/ui/button';
 import { usePrescriptionStore } from '@/stores/prescription.store';
 import { PrescriptionRepository } from '../repositories/prescription.repository';
 import { PrescriptionPrintModal } from './prescription-print-modal';
-import { PrescriptionLivePreviewSheet } from './prescription-live-preview-sheet';
+import { PrescriptionLivePreviewModal } from './prescription-live-preview-modal';
 import { toast } from 'sonner';
 
 export function PrescriptionActionBar() {
@@ -82,25 +82,9 @@ export function PrescriptionActionBar() {
       <div className="sticky bottom-4 z-30 bg-white/95 backdrop-blur-md border border-[#D0E5DC] p-3 sm:p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 flex-wrap">
         {/* Left Side: Paper Size & Status */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => setPaperSize('A5')}
-              className={`px-3 py-1 rounded-lg transition-colors ${
-                paperSize === 'A5' ? 'bg-[#0B7B5E] text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              مقاس A5
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaperSize('A4')}
-              className={`px-3 py-1 rounded-lg transition-colors ${
-                paperSize === 'A4' ? 'bg-[#0B7B5E] text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              مقاس A4
-            </button>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#E3F5EE] border border-[#0B7B5E]/30 text-xs font-black text-[#074C3A]">
+            <span className="w-2 h-2 rounded-full bg-[#0B7B5E]"></span>
+            <span>مقاس الروشتة المعتمد: A5 (148 × 210 مم)</span>
           </div>
 
           <div className="hidden md:flex items-center gap-2 text-xs text-slate-500 font-semibold">
@@ -173,8 +157,8 @@ export function PrescriptionActionBar() {
         </div>
       </div>
 
-      {/* Live Preview Sheet */}
-      <PrescriptionLivePreviewSheet
+      {/* Live Preview Modal (Centered Dialog) */}
+      <PrescriptionLivePreviewModal
         open={livePreviewOpen}
         onOpenChange={setLivePreviewOpen}
         onTriggerPrint={() => setPrintModalOpen(true)}

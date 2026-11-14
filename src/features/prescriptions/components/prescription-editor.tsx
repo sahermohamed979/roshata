@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { PatientInfoForm } from './patient-info-form';
 import { MedicineSearchCombobox } from './medicine-search-combobox';
 import { PrescriptionMedicineList } from './prescription-medicine-list';
+import { PrescriptionInstructionsForm } from './prescription-instructions-form';
 import { PrescriptionActionBar } from './prescription-action-bar';
 import { FileEdit, Sparkles, ShieldCheck, History, ArrowRight } from 'lucide-react';
 import { usePrescriptionStore } from '@/stores/prescription.store';
@@ -140,7 +141,10 @@ export function PrescriptionEditor() {
       {/* 3. Prescription Items Table / Cards */}
       <PrescriptionMedicineList />
 
-      {/* 4. Action & Print Bar */}
+      {/* 4. Clinical Instructions Form (يُضاف بها إرشادات مثل الأدوية فقط لو رغب الطبيب) */}
+      <PrescriptionInstructionsForm />
+
+      {/* 5. Action & Print Bar */}
       <PrescriptionActionBar />
     </div>
   );

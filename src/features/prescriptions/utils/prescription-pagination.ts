@@ -19,15 +19,15 @@ export interface PaginationConfig {
 export function calculateItemWeight(item: PrescriptionMedicineItem): number {
   let weight = 1.0;
   // Extra weight for multi-line clinical instructions
-  if (item.instructions && item.instructions.length > 50) {
+  if (item.instructions && item.instructions.length > 60) {
     weight += 0.5;
   }
-  if (item.instructions && item.instructions.length > 100) {
+  if (item.instructions && item.instructions.length > 120) {
     weight += 0.5;
   }
   // Extra weight for timing / custom remarks
   if (item.timing) {
-    weight += 0.2;
+    weight += 0.1;
   }
   return weight;
 }
@@ -37,10 +37,11 @@ export function calculateItemWeight(item: PrescriptionMedicineItem): number {
  * and ensure no medicine item is cut across page boundaries.
  */
 export function paginatePrescriptionItems(
-  items: PrescriptionMedicineItem[],
+  items: PrescriptionMedicineItem[] = [],
   paperSize: 'A4' | 'A5' | 'CUSTOM' = 'A5'
 ): PaginatedPage[] {
-  if (items.length === 0) {
+  const safeItems = Array.isArray(items) ? items : [];
+  if (safeItems.length === 0) {
     return [
       {
         pageNumber: 1,
@@ -53,19 +54,19 @@ export function paginatePrescriptionItems(
   }
 
   // Capacity thresholds based on physical mm dimensions
-  // A5: Page 1 has large header + patient bar + footer => capacity ~4.5
-  // A5: Continuation pages have compact header => capacity ~6.5
+  // A5: Page 1 accommodates exactly 5 standard medicines without overflow (capacity 5.5)
+  // A5: Continuation pages have compact header => capacity ~7.5
   // A4: Page 1 capacity ~8.5, continuation ~12
   const isA5 = paperSize === 'A5';
-  const page1Capacity = isA5 ? 4.5 : 8.5;
-  const continuationCapacity = isA5 ? 6.5 : 12.0;
+  const page1Capacity = isA5 ? 5.5 : 8.5;
+  const continuationCapacity = isA5 ? 7.5 : 12.0;
 
   const pagesItems: PrescriptionMedicineItem[][] = [];
   let currentPageItems: PrescriptionMedicineItem[] = [];
   let currentAccumulatedWeight = 0;
   let currentPageIndex = 0;
 
-  for (const item of items) {
+  for (const item of safeItems) {
     const itemWeight = calculateItemWeight(item);
     const maxCapacity = currentPageIndex === 0 ? page1Capacity : continuationCapacity;
 
